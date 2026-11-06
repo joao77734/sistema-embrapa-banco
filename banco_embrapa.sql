@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS sistema_embrapa;
-USE sistema_embrapa;
+CREATE DATABASE IF NOT EXISTS sistema_embrapa_pi;
+USE sistema_embrapa_pi;
 
 CREATE TABLE Setor (
     id INT AUTO_INCREMENT PRIMARY KEY,
