@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Validador - Embrapa</title>
+
+    <link rel="stylesheet" href="../../../public/css/main.css">
+    <link rel="stylesheet" href="../../../public/css/validador.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div class="container">
+
+        <a href="#" class="logo">
+            <span class="logo__nome">Embrapa</span>
+        </a>
+
+        <nav aria-label="Principal">
+            <ul class="abas">
+                <li><a href="#">Validador</a></li>
+                <li><a href="#">Sair</a></li>
+            </ul>
+        </nav>
+
+    </div>
+</header>
+
+<main>
+
+    <div class="container">
+
+        <section class="validador-main">
+
+            <h1>Painel do Validador</h1>
+
+            <p class="validador-descricao">
+                Avalie as ações cadastradas pelos pesquisadores.
+            </p>
+
+            <details class="funcao" open>
+
+                <summary>Listar Ações dos Pesquisadores</summary>
+
+                <div class="conteudo-funcao">
+
+                    <div class="tabela-responsiva">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Pesquisador</th>
+                                <th>Ação</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="listaAcoes">
+
+                            
+                            <tr>
+                                <td>Nome do Pesquisador</td>
+                                <td>Nome da Ação</td>
+                                <td><span class="status status-pendente">Pendente</span></td>
+                                <td>
+                                    <button type="button" class="btn salvar">
+                                        Avaliar
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Nome do Pesquisador</td>
+                                <td>Nome da Ação</td>
+                                <td><span class="status status-aprovado">Aprovado</span></td>
+                                <td>
+                                    <button type="button" class="btn salvar">
+                                        Avaliar
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Nome do Pesquisador</td>
+                                <td>Nome da Ação</td>
+                                <td><span class="status status-recusado">Recusado</span></td>
+                                <td>
+                                    <button type="button" class="btn salvar">
+                                        Avaliar
+                                    </button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                    </div>
+
+                </div>
+
+            </details>
+
+        </section>
+
+    </div>
+
+</main>
+
+<footer class="footer">
+
+    <div class="container">
+        <span>© Embrapa – Trabalho do Mauricio</span>
+        <a href="#">Política de privacidade</a>
+    </div>
+
+</footer>
+
+</body>
+</html>
