@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Administrador - Embrapa</title>
+
+    <link rel="stylesheet" href="../../../public/css/main.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div class="container">
+
+        <a href="#" class="logo">
+            <span class="logo__nome">Embrapa</span>
+        </a>
+
+        <nav aria-label="Principal">
+            <ul class="abas">
+                <li><a href="#">Início</a></li>
+                <li><a href="#">Administrador</a></li>
+                <li><a href="#">Sair</a></li>
+            </ul>
+        </nav>
+
+    </div>
+</header>
+
+<main>
+
+    <div class="container">
+
+        <section class="administrador">
+
+            <h1>Painel do Administrador</h1>
+
+            <p class="descricao">
+                Gerencie os usuários cadastrados no sistema.
+            </p>
+
+            <!-- CADASTRAR NOVO USUÁRIO -->
+            <details class="funcao">
+
+                <summary>Cadastrar Novo Usuário</summary>
+
+                <div class="conteudo-funcao">
+
+                    <form id="formCadastro">
+
+                        <div class="campos">
+
+                            <div class="campo">
+                                <label for="nome">Nome completo</label>
+                                <input type="text" id="nome"
+                                    placeholder="Digite o nome completo"
+                                    required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="matricula">Matrícula</label>
+                                <input type="text" id="matricula"
+                                    placeholder="Digite a matrícula"
+                                    required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="email">E-mail</label>
+                                <input type="email" id="email"
+                                    placeholder="Digite o e-mail"
+                                    required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="cargo">Cargo</label>
+                                <input type="text" id="cargo"
+                                    placeholder="Digite o cargo"
+                                    required>
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="btn salvar">
+                            Cadastrar Usuário
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </details>
+
+            <!-- LISTAR E GERENCIAR USUÁRIOS -->
+            <details class="funcao" open>
+
+                <summary>Listar Todos os Usuários</summary>
+
+                <div class="conteudo-funcao">
+
+                    <div class="tabela-responsiva">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Matrícula</th>
+                                    <th>E-mail</th>
+                                    <th>Cargo</th>
+                                    <th>Situação</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="listaUsuarios">
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                    <!-- FORMULÁRIO DE EDIÇÃO -->
+                    <div id="areaEdicao" class="area-edicao" hidden>
+
+                        <h3>Editar Cadastro de Usuário</h3>
+
+                        <form id="formEditar">
+
+                            <input type="hidden" id="editarId">
+
+                            <div class="campos">
+
+                                <div class="campo">
+                                    <label for="editarNome">
+                                        Nome completo
+                                    </label>
+
+                                    <input type="text" id="editarNome"
+                                        required>
+                                </div>
+
+                                <div class="campo">
+                                    <label for="editarMatricula">
+                                        Matrícula
+                                    </label>
+
+                                    <input type="text" id="editarMatricula"
+                                        required>
+                                </div>
+
+                                <div class="campo">
+                                    <label for="editarEmail">
+                                        E-mail
+                                    </label>
+
+                                    <input type="email" id="editarEmail"
+                                        required>
+                                </div>
+
+                                <div class="campo">
+                                    <label for="editarCargo">
+                                        Cargo
+                                    </label>
+
+                                    <input type="text" id="editarCargo"
+                                        required>
+                                </div>
+
+                            </div>
+
+                            <div class="botoes-edicao">
+
+                                <button type="submit" class="btn salvar">
+                                    Salvar Alterações
+                                </button>
+
+                                <button type="button"
+                                    class="btn cancelar"
+                                    id="cancelarEdicao">
+                                    Cancelar
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </details>
+
+        </section>
+
+    </div>
+
+</main>
+
+<footer class="footer">
+
+    <div class="container">
+        <span>© Embrapa – Trabalho do Mauricio</span>
+        <a href="#">Política de privacidade</a>
+    </div>
+
+</footer>
+
+<script>
+
+// DADOS INICIAIS DE DEMONSTRAÇÃO
+
+let usuarios = [
+    {
+        id: 1,
+        nome: "João da Silva",
+        matricula: "001",
+        email: "joao@email.com",
+        cargo: "Pesquisador",
+        status: "Ativo"
+    }
+];
+
+let proximoId = 2;
+
+// ELEMENTOS DA TELA
+
+const listaUsuarios = document.getElementById("listaUsuarios");
+const formCadastro = document.getElementById("formCadastro");
+const formEditar = document.getElementById("formEditar");
+const areaEdicao = document.getElementById("areaEdicao");
+
+// LISTAR USUÁRIOS
+
+function listarUsuarios() {
+
+    listaUsuarios.innerHTML = "";
+
+    usuarios.forEach(function(usuario) {
+
+        const linha = document.createElement("tr");
+
+        const dados = [
+            usuario.nome,
+            usuario.matricula,
+            usuario.email,
+            usuario.cargo
+        ];
+
+        dados.forEach(function(valor) {
+
+            const coluna = document.createElement("td");
+            coluna.textContent = valor;
+
+            linha.appendChild(coluna);
+
+        });
+
+        // SITUAÇÃO DO USUÁRIO
+
+        const colunaStatus = document.createElement("td");
+
+        const status = document.createElement("span");
+
+        status.textContent = usuario.status;
+        status.className = usuario.status === "Ativo"
+            ? "status ativo"
+            : "status inativo";
+
+        colunaStatus.appendChild(status);
+        linha.appendChild(colunaStatus);
+
+        // BOTÕES EDITAR E EXCLUIR
+
+        const colunaAcoes = document.createElement("td");
+
+        const botoes = document.createElement("div");
+        botoes.className = "acoes";
+
+        const botaoEditar = document.createElement("button");
+
+        botaoEditar.textContent = "Editar";
+        botaoEditar.className = "btn editar";
+
+        botaoEditar.addEventListener("click", function() {
+            editarUsuario(usuario.id);
+        });
+
+        const botaoExcluir = document.createElement("button");
+
+        botaoExcluir.textContent = "Excluir";
+        botaoExcluir.className = "btn excluir";
+
+        botaoExcluir.addEventListener("click", function() {
+            excluirUsuario(usuario.id);
+        });
+
+        botoes.appendChild(botaoEditar);
+        botoes.appendChild(botaoExcluir);
+
+        colunaAcoes.appendChild(botoes);
+        linha.appendChild(colunaAcoes);
+
+        listaUsuarios.appendChild(linha);
+
+    });
+
+}
+
+// CADASTRAR USUÁRIO
+
+formCadastro.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const novoUsuario = {
+
+        id: proximoId++,
+
+        nome: document.getElementById("nome").value.trim(),
+
+        matricula: document.getElementById("matricula").value.trim(),
+
+        email: document.getElementById("email").value.trim(),
+
+        cargo: document.getElementById("cargo").value.trim(),
+
+        status: "Ativo"
+
+    };
+
+    const matriculaExiste = usuarios.some(function(usuario) {
+        return usuario.matricula === novoUsuario.matricula;
+    });
+
+    if (matriculaExiste) {
+        alert("Esta matrícula já está cadastrada.");
+        return;
+    }
+
+    usuarios.push(novoUsuario);
+
+    listarUsuarios();
+
+    formCadastro.reset();
+
+    alert("Usuário cadastrado com sucesso!");
+
+});
+
+// EDITAR USUÁRIO
+
+function editarUsuario(id) {
+
+    const usuario = usuarios.find(function(item) {
+        return item.id === id;
+    });
+
+    if (!usuario) return;
+
+    document.getElementById("editarId").value = usuario.id;
+    document.getElementById("editarNome").value = usuario.nome;
+    document.getElementById("editarMatricula").value = usuario.matricula;
+    document.getElementById("editarEmail").value = usuario.email;
+    document.getElementById("editarCargo").value = usuario.cargo;
+
+    areaEdicao.hidden = false;
+
+    areaEdicao.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+
+}
+
+// SALVAR EDIÇÃO
+
+formEditar.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const id = Number(document.getElementById("editarId").value);
+
+    const usuario = usuarios.find(function(item) {
+        return item.id === id;
+    });
+
+    if (!usuario) return;
+
+    const matricula = document.getElementById("editarMatricula").value.trim();
+
+    const matriculaExiste = usuarios.some(function(item) {
+        return item.matricula === matricula && item.id !== id;
+    });
+
+    if (matriculaExiste) {
+        alert("Esta matrícula já pertence a outro usuário.");
+        return;
+    }
+
+    usuario.nome = document.getElementById("editarNome").value.trim();
+
+    usuario.matricula = matricula;
+
+    usuario.email = document.getElementById("editarEmail").value.trim();
+
+    usuario.cargo = document.getElementById("editarCargo").value.trim();
+
+    listarUsuarios();
+
+    areaEdicao.hidden = true;
+
+    formEditar.reset();
+
+    alert("Cadastro atualizado com sucesso!");
+
+});
+
+// CANCELAR EDIÇÃO
+
+document.getElementById("cancelarEdicao").addEventListener("click", function() {
+
+    areaEdicao.hidden = true;
+
+    formEditar.reset();
+
+});
+
+// EXCLUIR USUÁRIO
+
+function excluirUsuario(id) {
+
+    const usuario = usuarios.find(function(item) {
+        return item.id === id;
+    });
+
+    if (!usuario) return;
+
+    const confirmar = confirm(
+        "Deseja realmente excluir o usuário " + usuario.nome + "?"
+    );
+
+    if (!confirmar) return;
+
+    usuarios = usuarios.filter(function(item) {
+        return item.id !== id;
+    });
+
+    if (Number(document.getElementById("editarId").value) === id) {
+        areaEdicao.hidden = true;
+    }
+
+    listarUsuarios();
+
+    alert("Usuário excluído com sucesso!");
+
+}
+
+// CARREGAR LISTAGEM INICIAL
+
+listarUsuarios();
+
+</script>
+
+</body>
+</html>
