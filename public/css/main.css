@@ -157,6 +157,14 @@ a:focus-visible {
     background: rgba(214, 231, 250, .18);
 }
 
+.abas span {
+    display: block;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: #D6E7FA;
+    font-weight: 600;
+}
+
 /* CONTEÚDO */
 
 main {
