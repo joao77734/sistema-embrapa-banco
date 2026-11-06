@@ -1,12 +1,14 @@
 CREATE DATABASE IF NOT EXISTS sistema_embrapa_pi;
-USE sistema_embrapa_pi;
 
+USE sistema_embrapa_pi;
+ 
 CREATE TABLE Setor (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL, status BOOLEAN NOT NULL DEFAULT TRUE
 );
-
+ 
 CREATE TABLE Pesquisador (
+
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
@@ -17,7 +19,7 @@ CREATE TABLE Pesquisador (
     status BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (id_setor) REFERENCES Setor(id)
 );
-
+ 
 CREATE TABLE Validador (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
@@ -28,13 +30,13 @@ CREATE TABLE Validador (
     status BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (id_setor) REFERENCES Setor(id)
 );
-
+ 
 CREATE TABLE Ano (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ano YEAR NOT NULL UNIQUE,
     status BOOLEAN NOT NULL DEFAULT TRUE
 );
-
+ 
 CREATE TABLE Acao_pesquisador (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titulo VARCHAR(100) NOT NULL,
@@ -45,7 +47,7 @@ CREATE TABLE Acao_pesquisador (
     id_pesquisador INT NOT NULL,
     FOREIGN KEY (id_pesquisador) REFERENCES Pesquisador(id)
 );
-
+ 
 CREATE TABLE Comprovante (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome_arquivo VARCHAR(100) NOT NULL,
@@ -54,7 +56,7 @@ CREATE TABLE Comprovante (
     id_acao INT NOT NULL,
     FOREIGN KEY (id_acao) REFERENCES Acao_pesquisador(id) ON DELETE CASCADE
 );
-
+ 
 CREATE TABLE Ano_acao (
     id_ano INT NOT NULL,
     id_acao INT NOT NULL,
@@ -64,7 +66,15 @@ CREATE TABLE Ano_acao (
     FOREIGN KEY (id_ano) REFERENCES Ano(id),
     FOREIGN KEY (id_acao) REFERENCES Acao_pesquisador(id) ON DELETE CASCADE
 );
-
+ 
+CREATE TABLE Administrador (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    funcao VARCHAR(13) NOT NULL,
+    status BOOLEAN
+);
+ 
 CREATE TABLE Log_auditor (
     id_log INT AUTO_INCREMENT PRIMARY KEY,
     operacao_tabela VARCHAR(150) NOT NULL,
