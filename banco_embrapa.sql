@@ -48,15 +48,6 @@ CREATE TABLE Acao_pesquisador (
     FOREIGN KEY (id_pesquisador) REFERENCES Pesquisador(id)
 );
  
-CREATE TABLE Comprovante (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome_arquivo VARCHAR(100) NOT NULL,
-    caminho_arquivo VARCHAR(255) NOT NULL,
-    tipo_arquivo VARCHAR(50) NOT NULL,
-    id_acao INT NOT NULL,
-    FOREIGN KEY (id_acao) REFERENCES Acao_pesquisador(id) ON DELETE CASCADE
-);
- 
 CREATE TABLE Ano_acao (
     id_ano INT NOT NULL,
     id_acao INT NOT NULL,
