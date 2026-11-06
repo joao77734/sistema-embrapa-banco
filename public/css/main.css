@@ -462,3 +462,409 @@ tbody tr:hover {
     }
 
 }
+
+
+:root {
+    --azul-claro: #1A6FC9;
+    --azul-escuro: #072B57;
+    --azul: #0B4A8F;
+    --fundo: #fff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--fundo);
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid #F2B705;
+    outline-offset: 2px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* CABEÇALHO */
+
+.header {
+    background: var(--azul);
+    border-bottom: 4px solid var(--azul-claro);
+}
+
+.header .container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    max-width: none;
+    padding: 20px 16px;
+}
+
+.logo__nome {
+    font-size: 30px;
+    font-weight: 700;
+    color: #D6E7FA;
+    line-height: 1;
+}
+
+/* NAVEGAÇÃO */
+
+.abas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.abas a {
+    display: block;
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: #D6E7FA;
+    font-weight: 600;
+}
+
+.abas a:hover {
+    background: rgba(214, 231, 250, .18);
+}
+
+/* CONTEÚDO */
+
+main {
+    flex: 1;
+}
+
+.pesquisador {
+    padding: 40px 0 50px;
+}
+
+.pesquisador h1 {
+    text-align: center;
+    color: var(--azul-escuro);
+    font-size: 28px;
+    margin: 0 0 12px;
+}
+
+.pesquisador .descricao {
+    text-align: center;
+    color: #666;
+    font-size: 15px;
+    margin: 0 0 35px;
+}
+
+/* SEÇÕES PRINCIPAIS */
+
+.pesquisador .funcao {
+    max-width: 1050px;
+    margin: 0 auto 15px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.pesquisador .funcao summary {
+    padding: 18px 20px;
+    cursor: pointer;
+    color: var(--azul-escuro);
+    font-size: 17px;
+    font-weight: 700;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pesquisador .funcao summary::-webkit-details-marker {
+    display: none;
+}
+
+.pesquisador .funcao summary::after {
+    content: "+";
+    font-size: 23px;
+    font-weight: 400;
+    color: var(--azul);
+}
+
+.pesquisador .funcao[open] summary::after {
+    content: "−";
+}
+
+.pesquisador .funcao summary:hover {
+    background: #f5f8fc;
+}
+
+.pesquisador .conteudo-funcao {
+    padding: 22px;
+    border-top: 1px solid #e5e5e5;
+}
+
+/* LISTAGEM */
+
+.pesquisador .funcao--lista {
+    margin-bottom: 0;
+}
+
+.pesquisador .conteudo-funcao--lista {
+    padding: 8px 0 0;
+}
+
+/* FORMULÁRIOS */
+
+.pesquisador .campos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.pesquisador .campo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.pesquisador .campo label {
+    color: var(--azul-escuro);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.pesquisador .campo input,
+.pesquisador .campo select,
+.pesquisador .campo textarea {
+    width: 100%;
+    min-height: 40px;
+    padding: 9px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    background: white;
+}
+
+.pesquisador .campo textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.pesquisador .campo input:focus,
+.pesquisador .campo select:focus,
+.pesquisador .campo textarea:focus {
+    outline: none;
+    border-color: var(--azul-claro);
+}
+
+/* BOTÕES */
+
+.pesquisador .btn {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 5px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.pesquisador .salvar {
+    background: var(--azul);
+    color: white;
+}
+
+.pesquisador .salvar:hover {
+    background: var(--azul-escuro);
+}
+
+.pesquisador .editar {
+    background: #E8F1FC;
+    color: #0B4A8F;
+}
+
+.pesquisador .editar:hover {
+    background: #D3E5F8;
+}
+
+.pesquisador .excluir {
+    background: #FCE5E5;
+    color: #C62828;
+}
+
+.pesquisador .excluir:hover {
+    background: #F8D0D0;
+}
+
+.pesquisador .cancelar {
+    background: #e5e5e5;
+    color: #444;
+}
+
+.pesquisador .cancelar:hover {
+    background: #d5d5d5;
+}
+
+/* TABELA */
+
+.pesquisador .tabela-responsiva {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.pesquisador table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 750px;
+}
+
+.pesquisador th {
+    background: #f0f4f8;
+    color: var(--azul-escuro);
+    font-size: 13px;
+    padding: 14px 12px;
+    white-space: nowrap;
+}
+
+.pesquisador td {
+    padding: 13px 12px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #444;
+    font-size: 13px;
+}
+
+.pesquisador tbody tr:hover {
+    background: #f8fafc;
+}
+
+.pesquisador tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* STATUS DAS AÇÕES */
+
+.pesquisador .status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.pesquisador .analise {
+    background: #FFF0D4;
+    color: #9A6500;
+}
+
+.pesquisador .aprovado {
+    background: #DDF5E4;
+    color: #168B37;
+}
+
+.pesquisador .recusado {
+    background: #FFDADA;
+    color: #D71919;
+}
+
+/* AÇÕES DA TABELA */
+
+.pesquisador .acoes {
+    display: flex;
+    gap: 7px;
+}
+
+/* BOTÕES DO FORMULÁRIO */
+
+.pesquisador .botoes-edicao {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* RODAPÉ */
+
+.footer {
+    background: var(--azul-escuro);
+    color: #E6EEF8;
+    border-top: 4px solid var(--azul-claro);
+    font-size: 14px;
+}
+
+.footer .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 750px) {
+
+    .pesquisador .campos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .header .container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pesquisador {
+        padding: 30px 0;
+    }
+
+    .pesquisador h1 {
+        font-size: 23px;
+    }
+
+    .pesquisador .campos {
+        grid-template-columns: 1fr;
+    }
+
+    .pesquisador .funcao summary {
+        font-size: 15px;
+    }
+
+    .pesquisador .conteudo-funcao {
+        padding: 15px;
+    }
+
+    .pesquisador .conteudo-funcao--lista {
+        padding: 8px 0 0;
+    }
+
+}
