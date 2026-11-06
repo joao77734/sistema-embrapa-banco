@@ -1,8 +1,8 @@
 <?php
-$host = 'localhost';
+$host = '127.0.0.1'; 
 $username = 'root';
-$password = '';
-$dbname = 'nome_do_banco';
+$password = ''; 
+$dbname = 'sistema_embrapa_pi';
 
 $conexao = mysqli_connect($host, $username, $password, $dbname);
 
