@@ -463,46 +463,7 @@ tbody tr:hover {
 
 }
 
-
-:root {
-    --azul-claro: #1A6FC9;
-    --azul-escuro: #072B57;
-    --azul: #0B4A8F;
-    --fundo: #fff;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--fundo);
-    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-}
-
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-a:focus-visible,
-button:focus-visible {
-    outline: 3px solid #F2B705;
-    outline-offset: 2px;
-}
-
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-}
-
-/* CABEÇALHO */
+/*Área Pesquisador*/
 
 .header {
     background: var(--azul);
@@ -526,8 +487,6 @@ button:focus-visible {
     line-height: 1;
 }
 
-/* NAVEGAÇÃO */
-
 .abas {
     display: flex;
     flex-wrap: wrap;
@@ -548,8 +507,6 @@ button:focus-visible {
 .abas a:hover {
     background: rgba(214, 231, 250, .18);
 }
-
-/* CONTEÚDO */
 
 main {
     flex: 1;
@@ -572,8 +529,6 @@ main {
     font-size: 15px;
     margin: 0 0 35px;
 }
-
-/* SEÇÕES PRINCIPAIS */
 
 .pesquisador .funcao {
     max-width: 1050px;
@@ -621,8 +576,6 @@ main {
     border-top: 1px solid #e5e5e5;
 }
 
-/* LISTAGEM */
-
 .pesquisador .funcao--lista {
     margin-bottom: 0;
 }
@@ -630,8 +583,6 @@ main {
 .pesquisador .conteudo-funcao--lista {
     padding: 8px 0 0;
 }
-
-/* FORMULÁRIOS */
 
 .pesquisador .campos {
     display: grid;
@@ -676,8 +627,6 @@ main {
     outline: none;
     border-color: var(--azul-claro);
 }
-
-/* BOTÕES */
 
 .pesquisador .btn {
     padding: 9px 14px;
@@ -726,8 +675,6 @@ main {
     background: #d5d5d5;
 }
 
-/* TABELA */
-
 .pesquisador .tabela-responsiva {
     width: 100%;
     overflow-x: auto;
@@ -763,8 +710,6 @@ main {
     border-bottom: none;
 }
 
-/* STATUS DAS AÇÕES */
-
 .pesquisador .status {
     display: inline-block;
     padding: 5px 10px;
@@ -789,22 +734,16 @@ main {
     color: #D71919;
 }
 
-/* AÇÕES DA TABELA */
-
 .pesquisador .acoes {
     display: flex;
     gap: 7px;
 }
-
-/* BOTÕES DO FORMULÁRIO */
 
 .pesquisador .botoes-edicao {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
-
-/* RODAPÉ */
 
 .footer {
     background: var(--azul-escuro);
@@ -824,47 +763,4 @@ main {
 
 .footer a:hover {
     text-decoration: underline;
-}
-
-/* RESPONSIVIDADE */
-
-@media (max-width: 750px) {
-
-    .pesquisador .campos {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-}
-
-@media (max-width: 500px) {
-
-    .header .container {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .pesquisador {
-        padding: 30px 0;
-    }
-
-    .pesquisador h1 {
-        font-size: 23px;
-    }
-
-    .pesquisador .campos {
-        grid-template-columns: 1fr;
-    }
-
-    .pesquisador .funcao summary {
-        font-size: 15px;
-    }
-
-    .pesquisador .conteudo-funcao {
-        padding: 15px;
-    }
-
-    .pesquisador .conteudo-funcao--lista {
-        padding: 8px 0 0;
-    }
-
 }
