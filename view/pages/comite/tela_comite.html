@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Comitê - Embrapa</title>
+    <link rel="stylesheet" href="../../../public/css/main.css">
+    <link rel="stylesheet" href="../../../modelos/base.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="#" class="logo">
+                <span class="logo__nome">Embrapa</span>
+            </a>
+            <nav aria-label="Principal">
+                <ul class="abas">
+                    <li><span>Comitê</span></li>
+                    <li><a href="../auth.php?acao=sair">Sair</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="comite-conteudo">
+                <h1 class="comite-titulo">Auditoria do Sistema</h1>
+                <p class="comite-subtitulo">Registro das atividades realizadas pelos usuários</p>
+
+                <details class="comite-funcao">
+                    <summary class="comite-funcao-titulo">Listar Atividades dos Usuários</summary>
+                    <div class="comite-funcao-conteudo">
+                        <div class="comite-tabela-responsiva">
+                            <table class="comite-tabela">
+                                <thead>
+                                    <tr class="comite-tabela-linha">
+                                        <th class="comite-tabela-cabecalho">Usuário</th>
+                                        <th class="comite-tabela-cabecalho">Cargo</th>
+                                        <th class="comite-tabela-cabecalho">Data e hora</th>
+                                        <th class="comite-tabela-cabecalho">Descrição do que foi realizado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listaAtividades">
+                                    <tr class="comite-tabela-linha">
+                                        <td class="comite-tabela-celula" colspan="4">Carregando atividades...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </details>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <span>© Embrapa – Trabalho do Mauricio</span>
+            <a href="#">Política de privacidade</a>
+        </div>
+    </footer>
+
+    <script>
+        const listaAtividades = document.getElementById('listaAtividades');
+
+        function exibirMensagem(mensagem) {
+            const linha = document.createElement('tr');
+            linha.className = 'comite-tabela-linha';
+            const celula = document.createElement('td');
+            celula.className = 'comite-tabela-celula';
+            celula.colSpan = 4;
+            celula.textContent = mensagem;
+            linha.append(celula);
+            listaAtividades.replaceChildren(linha);
+        }
+
+        async function carregarAtividades() {
+            try {
+                const resposta = await fetch('tela_comite.php');
+                const dados = await resposta.json();
+                if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível carregar as atividades.');
+
+                if (!dados.atividades.length) {
+                    exibirMensagem('Nenhuma atividade foi registrada.');
+                    return;
+                }
+
+                listaAtividades.replaceChildren();
+                dados.atividades.forEach((atividade) => {
+                    const linha = document.createElement('tr');
+                    linha.className = 'comite-tabela-linha';
+                    const data = new Date(String(atividade.data_hora).replace(' ', 'T'));
+                    const dataFormatada = Number.isNaN(data.getTime())
+                        ? atividade.data_hora
+                        : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(data);
+                    const valores = [
+                        atividade.usuario,
+                        atividade.cargo,
+                        dataFormatada,
+                        `Registro na tabela ${atividade.operacao_tabela} (ID ${atividade.id_registro})`
+                    ];
+
+                    valores.forEach((valor, indice) => {
+                        const celula = document.createElement('td');
+                        celula.className = indice === 2
+                            ? 'comite-tabela-celula comite-tabela-celula-data'
+                            : 'comite-tabela-celula';
+                        celula.textContent = valor;
+                        linha.append(celula);
+                    });
+                    listaAtividades.append(linha);
+                });
+            } catch (erro) {
+                exibirMensagem(erro.message || 'Erro ao carregar as atividades.');
+            }
+        }
+
+        carregarAtividades();
+    </script>
+</body>
+
+</html>
