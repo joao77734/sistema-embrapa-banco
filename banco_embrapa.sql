@@ -73,3 +73,18 @@ CREATE TABLE Log_auditor (
     data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
     matricula_usuario VARCHAR(20) NOT NULL
 );
+
+INSERT INTO Setor (nome)
+SELECT 'SIPT' WHERE NOT EXISTS (
+    SELECT 1 FROM Setor WHERE nome = 'SIPT' AND status = TRUE
+);
+
+INSERT INTO Setor (nome)
+SELECT 'NCO' WHERE NOT EXISTS (
+    SELECT 1 FROM Setor WHERE nome = 'NCO' AND status = TRUE
+);
+
+INSERT INTO Setor (nome)
+SELECT 'SPIT' WHERE NOT EXISTS (
+    SELECT 1 FROM Setor WHERE nome = 'SPIT' AND status = TRUE
+);
