@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recusar ação</title>
+    <link rel="stylesheet" href="../../../public/css/main.css">
+</head>
+<body class="pagina-popup">
+    <main class="validador-pop-up-fundo">
+        <section class="validador-pop-up-recusa" role="dialog" aria-modal="true"
+            aria-labelledby="titulo-recusar-acao">
+            <h1 id="titulo-recusar-acao">Recusar Ação</h1>
+
+            <form>
+                <div class="validador-pop-up-recusa__campos">
+                    <div class="validador-pop-up-recusa__campo">
+                        <label for="motivo-recusa">Motivo da recusa</label>
+                        <textarea id="motivo-recusa" rows="5"
+                            placeholder="Explique o motivo pelo qual a ação está sendo recusada" required></textarea>
+                    </div>
+                </div>
+
+                <div class="validador-pop-up-recusa__acoes">
+                    <button type="button" class="btn cancelar validador-pop-up-btn">Cancelar</button>
+                    <button type="button" class="btn validador-pop-up-btn validador-pop-up-recusa__confirmar">
+                        Confirmar Recusa
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
