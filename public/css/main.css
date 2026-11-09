@@ -544,12 +544,12 @@ tbody tr:hover {
 }
 
 .popup-edicao__fechar {
-    background: #F2B705;
-    color: #333;
+    background: var(--azul-claro);
+    color: #fff;
 }
 
 .popup-edicao__fechar:hover {
-    background: #D9A300;
+    background: var(--azul);
 }
 
 .popup-edicao__acoes button:focus-visible {
