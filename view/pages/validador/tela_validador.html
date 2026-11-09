@@ -8,7 +8,6 @@
     <title>Validador - Embrapa</title>
 
     <link rel="stylesheet" href="../../../public/css/main.css">
-    <link rel="stylesheet" href="../../../public/css/validador.css">
 </head>
 
 <body>
@@ -62,41 +61,9 @@
                         </thead>
 
                         <tbody id="listaAcoes">
-
-                            
                             <tr>
-                                <td>Nome do Pesquisador</td>
-                                <td>Nome da Ação</td>
-                                <td><span class="status status-pendente">Pendente</span></td>
-                                <td>
-                                    <button type="button" class="btn salvar">
-                                        Avaliar
-                                    </button>
-                                </td>
+                                <td colspan="4">Carregando ações...</td>
                             </tr>
-
-                            <tr>
-                                <td>Nome do Pesquisador</td>
-                                <td>Nome da Ação</td>
-                                <td><span class="status status-aprovado">Aprovado</span></td>
-                                <td>
-                                    <button type="button" class="btn salvar">
-                                        Avaliar
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>Nome do Pesquisador</td>
-                                <td>Nome da Ação</td>
-                                <td><span class="status status-recusado">Recusado</span></td>
-                                <td>
-                                    <button type="button" class="btn salvar">
-                                        Avaliar
-                                    </button>
-                                </td>
-                            </tr>
-
                         </tbody>
 
                     </table>
@@ -121,6 +88,167 @@
     </div>
 
 </footer>
+
+<div id="popupAvaliacao" class="validador-pop-up-fundo" style="display: none;" hidden>
+    <section class="validador-pop-up-avaliacao" role="dialog" aria-modal="true"
+        aria-labelledby="titulo-avaliar-acao" aria-describedby="aviso-avaliar-acao">
+        <div class="validador-pop-up-avaliacao__icone" aria-hidden="true">?</div>
+        <h1 id="titulo-avaliar-acao">Avaliar ação</h1>
+        <p id="aviso-avaliar-acao">Deseja aprovar ou recusar esta ação?</p>
+        <p class="validador-pop-up-avaliacao__nome"><strong id="nomeAcaoPopup"></strong></p>
+        <p id="detalhesAcaoPopup"></p>
+        <div class="validador-pop-up-avaliacao__acoes">
+            <button type="button" class="btn cancelar validador-pop-up-btn" id="cancelarAvaliacao">Cancelar</button>
+            <button type="button" class="btn validador-pop-up-btn validador-pop-up-avaliacao__recusar" id="abrirRecusa">
+                Recusar Ação
+            </button>
+            <button type="button" class="btn validador-pop-up-btn validador-pop-up-avaliacao__aprovar" id="aprovarAcao">
+                Aprovar
+            </button>
+        </div>
+    </section>
+</div>
+
+<script>
+    const listaAcoes = document.getElementById('listaAcoes');
+    const popupAvaliacao = document.getElementById('popupAvaliacao');
+    let acaoSelecionada = null;
+
+    async function requisitarAvaliacoes(opcoes = {}) {
+        let resposta;
+        try {
+            resposta = await fetch('avaliacoes.php', {
+                ...opcoes,
+                headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) }
+            });
+        } catch (erro) {
+            throw new Error('Não foi possível conectar ao servidor. Verifique o Apache do XAMPP.');
+        }
+
+        let dados;
+        try {
+            dados = await resposta.json();
+        } catch (erro) {
+            throw new Error('O servidor não retornou uma resposta válida.');
+        }
+        if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível concluir a avaliação.');
+        return dados;
+    }
+
+    function definirVisibilidadePopup(popup, visivel) {
+        popup.hidden = !visivel;
+        popup.style.display = visivel ? 'grid' : 'none';
+    }
+
+    function adicionarCelula(linha, texto) {
+        const celula = document.createElement('td');
+        celula.textContent = texto;
+        linha.append(celula);
+    }
+
+    function renderizarAcoes(acoes) {
+        listaAcoes.replaceChildren();
+        if (!acoes.length) {
+            const linha = document.createElement('tr');
+            const celula = document.createElement('td');
+            celula.colSpan = 4;
+            celula.textContent = 'Nenhuma ação cadastrada.';
+            linha.append(celula);
+            listaAcoes.append(linha);
+            return;
+        }
+
+        acoes.forEach((acao) => {
+            const linha = document.createElement('tr');
+            adicionarCelula(linha, acao.pesquisador);
+            adicionarCelula(linha, acao.titulo);
+
+            const celulaStatus = document.createElement('td');
+            const seloStatus = document.createElement('span');
+            const statusClass = {
+                Pendente: 'status-pendente',
+                Aprovado: 'status-aprovado',
+                Recusado: 'status-recusado'
+            }[acao.status] || 'status-pendente';
+            seloStatus.className = `status ${statusClass}`;
+            seloStatus.textContent = acao.status;
+            celulaStatus.append(seloStatus);
+            linha.append(celulaStatus);
+
+            const celulaAcao = document.createElement('td');
+            if (acao.status === 'Pendente') {
+                const botao = document.createElement('button');
+                botao.type = 'button';
+                botao.className = 'btn salvar';
+                botao.textContent = 'Avaliar';
+                botao.addEventListener('click', () => abrirPopup(acao));
+                celulaAcao.append(botao);
+            } else {
+                celulaAcao.textContent = 'Avaliada';
+            }
+            linha.append(celulaAcao);
+            listaAcoes.append(linha);
+        });
+    }
+
+    async function carregarAcoes() {
+        try {
+            const dados = await requisitarAvaliacoes();
+            renderizarAcoes(dados.acoes);
+        } catch (erro) {
+            const linha = document.createElement('tr');
+            const celula = document.createElement('td');
+            celula.colSpan = 4;
+            celula.textContent = erro.message;
+            linha.append(celula);
+            listaAcoes.replaceChildren(linha);
+        }
+    }
+
+    function abrirPopup(acao) {
+        acaoSelecionada = acao;
+        document.getElementById('nomeAcaoPopup').textContent = acao.titulo;
+        document.getElementById('detalhesAcaoPopup').textContent =
+            `${acao.pesquisador} · ${acao.categoria_acao} · ${acao.data_realizacao}`;
+        definirVisibilidadePopup(popupAvaliacao, true);
+        document.getElementById('aprovarAcao').focus();
+    }
+
+    function fecharPopups() {
+        definirVisibilidadePopup(popupAvaliacao, false);
+        acaoSelecionada = null;
+    }
+
+    async function salvarAvaliacao(status) {
+        if (!acaoSelecionada) return;
+        const botao = status === 'Aprovado'
+            ? document.getElementById('aprovarAcao')
+            : document.getElementById('abrirRecusa');
+        botao.disabled = true;
+        try {
+            await requisitarAvaliacoes({
+                method: 'PATCH',
+                body: JSON.stringify({
+                    id: acaoSelecionada.id,
+                    status
+                })
+            });
+            fecharPopups();
+            await carregarAcoes();
+            alert('Avaliação salva com sucesso.');
+        } catch (erro) {
+            alert(erro.message);
+        } finally {
+            botao.disabled = false;
+        }
+    }
+
+    document.getElementById('cancelarAvaliacao').addEventListener('click', fecharPopups);
+    document.getElementById('aprovarAcao').addEventListener('click', () => salvarAvaliacao('Aprovado'));
+    document.getElementById('abrirRecusa').addEventListener('click', () => salvarAvaliacao('Recusado'));
+
+    carregarAcoes();
+</script>
 
 </body>
 </html>
