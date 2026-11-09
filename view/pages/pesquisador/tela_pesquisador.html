@@ -42,7 +42,7 @@
             </p>
 
             <div class="pesquisador-nova-acao">
-                <a class="btn salvar">Criar Nova Ação</a>
+                <button type="button" class="btn salvar" id="btnCriarAcao">Criar Nova Ação</button>
             </div>
 
             <details class="funcao funcao--lista" open>
@@ -81,13 +81,8 @@
                                     <td>
                                         <div class="acoes">
 
-                                            <a class="btn editar">
-                                                Editar
-                                            </a>
-
-                                            <a class="btn excluir">
-                                                Excluir
-                                            </a>
+                                            <a class="btn editar" onclick="abrirPopup('pop_up_edicao.html')">Editar</a>
+                                            <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.html')">Excluir</a>
 
                                         </div>
                                     </td>
@@ -107,13 +102,8 @@
                                     <td>
                                         <div class="acoes">
 
-                                            <a class="btn editar">
-                                                Editar
-                                            </a>
-
-                                            <a class="btn excluir">
-                                                Excluir
-                                            </a>
+                                            <a class="btn editar" onclick="abrirPopup('pop_up_edicao.html')">Editar</a>
+                                            <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.html')">Excluir</a>
 
                                         </div>
                                     </td>
@@ -133,13 +123,8 @@
                                     <td>
                                         <div class="acoes">
 
-                                            <a class="btn editar">
-                                                Editar
-                                            </a>
-
-                                            <a class="btn excluir">
-                                                Excluir
-                                            </a>
+                                            <a class="btn editar" onclick="abrirPopup('pop_up_edicao.html')">Editar</a>
+                                            <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.html')">Excluir</a>
 
                                         </div>
                                     </td>
@@ -158,6 +143,31 @@
         </section>
 
     </div>
+
+    <dialog id="modalPopup" style="border: none; background: transparent; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none;">
+        <iframe id="iframePopup" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+    </dialog>
+
+    <script>
+        const modal = document.getElementById('modalPopup');
+        const iframe = document.getElementById('iframePopup');
+        const btnCriar = document.getElementById('btnCriarAcao');
+
+        btnCriar.addEventListener('click', () => {
+            iframe.src = 'pop_up_criar_acao.html';
+            modal.showModal();
+        });
+
+        function abrirPopup(pagina) {
+            iframe.src = pagina;
+            modal.showModal();
+        }
+
+        function fecharPopup() {
+            modal.close();
+            iframe.src = '';
+        }
+    </script>
 
 </main>
 
