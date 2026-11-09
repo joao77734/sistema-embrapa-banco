@@ -1,4 +1,26 @@
 <?php
+if (($_GET['acao'] ?? '') === 'sair') {
+    session_start();
+    $_SESSION = [];
+
+    if (ini_get('session.use_cookies')) {
+        $parametros = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $parametros['path'],
+            $parametros['domain'],
+            $parametros['secure'],
+            $parametros['httponly']
+        );
+    }
+
+    session_destroy();
+    header('Location: tela_login.html', true, 303);
+    exit;
+}
+
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../config/auth_helpers.php';
 
@@ -8,20 +30,6 @@ function responderLogin(int $codigo, array $dados): void
 {
     http_response_code($codigo);
     echo json_encode($dados, JSON_UNESCAPED_UNICODE);
-    exit;
-}
-
-$acao = $_GET['acao'] ?? 'entrar';
-
-if ($acao === 'sair') {
-    session_start();
-    $_SESSION = [];
-    if (ini_get('session.use_cookies')) {
-        $parametros = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $parametros['path'], $parametros['domain'], $parametros['secure'], $parametros['httponly']);
-    }
-    session_destroy();
-    header('Location: tela_login.html');
     exit;
 }
 

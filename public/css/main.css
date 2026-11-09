@@ -1396,7 +1396,12 @@ main {
     display: grid;
     place-items: center;
     padding: 20px;
-    background: rgba(215, 216, 218, 0.075);
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1000;
+}
+
+.validador-pop-up-fundo[hidden] {
+    display: none !important;
 }
 
 .validador-pop-up-btn {
