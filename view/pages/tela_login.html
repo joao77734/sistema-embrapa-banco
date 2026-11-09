@@ -23,17 +23,18 @@
     <h2>Entre no Sistema</h2>
     <p>Insira suas informações para entrar</p>
     
-    <form action="#" method="POST" class="login-form">
+    <form action="auth.php" method="POST" class="login-form" id="formLogin">
       <div class="input-group">
         <label for="usuario">E-mail</label>
-        <input type="text" id="usuario" name="usuario" placeholder="Digite o seu email" required>
+        <input type="email" id="usuario" name="usuario" placeholder="Digite o seu email" autocomplete="username" required>
       </div>
 
       <div class="input-group">
-          <label for="pin">PIN</label>
-          <input type="password" id="pin" name="pin" inputmode="numeric" placeholder="Digite seu PIN" required>
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" placeholder="Digite sua senha" autocomplete="current-password" required>
       </div>
 
+      <p id="erroLogin" role="alert" aria-live="polite" hidden></p>
       <button type="submit" class="btn-login">Entrar</button>
     </form>
   </div>
@@ -46,6 +47,36 @@
     <a href="#">Política de privacidade</a>
   </div>
 </footer>
+
+<script>
+  document.getElementById('formLogin').addEventListener('submit', async (evento) => {
+    evento.preventDefault();
+    const formulario = evento.currentTarget;
+    const erro = document.getElementById('erroLogin');
+    const botao = formulario.querySelector('button[type="submit"]');
+    erro.hidden = true;
+    botao.disabled = true;
+
+    try {
+      const resposta = await fetch('auth.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('usuario').value.trim(),
+          senha: document.getElementById('senha').value
+        })
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível entrar.');
+      window.location.href = dados.destino;
+    } catch (falha) {
+      erro.textContent = falha.message || 'Falha ao conectar com o servidor.';
+      erro.hidden = false;
+    } finally {
+      botao.disabled = false;
+    }
+  });
+</script>
 
 </body>
 </html>

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../config/auth_helpers.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -54,6 +55,7 @@ function tabelaUsuario(string $tipo): string
 }
 
 try {
+    garantirColunasDeSenha($conexao);
     $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
     if ($metodo === 'GET') {
@@ -90,8 +92,9 @@ try {
         $tipo = validarTipo($dados['tipo'] ?? null);
         $usuario = validarUsuario($dados);
         $tabela = tabelaUsuario($tipo);
-        $stmt = mysqli_prepare($conexao, "INSERT INTO {$tabela} (nome, email, matricula, funcao, id_setor) VALUES (?, ?, ?, ?, ?)");
-        mysqli_stmt_bind_param($stmt, 'ssssi', $usuario['nome'], $usuario['email'], $usuario['matricula'], $usuario['funcao'], $usuario['id_setor']);
+        $senhaHash = password_hash('1234', PASSWORD_DEFAULT);
+        $stmt = mysqli_prepare($conexao, "INSERT INTO {$tabela} (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, 'sssssi', $usuario['nome'], $usuario['email'], $usuario['matricula'], $usuario['funcao'], $senhaHash, $usuario['id_setor']);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         responder(201, ['mensagem' => 'Usuário cadastrado.']);
