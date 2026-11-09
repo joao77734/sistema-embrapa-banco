@@ -1217,6 +1217,143 @@ main {
     background: var(--azul);
 }
 
+
+.comite-conteudo {
+    padding: 40px 0 50px;
+}
+
+.comite-titulo {
+    text-align: center;
+    color: #072B57;
+    font-size: 28px;
+    margin: 0 0 12px;
+}
+
+.comite-subtitulo {
+    text-align: center;
+    color: #666;
+    font-size: 15px;
+    margin: 0 0 35px;
+}
+
+.comite-secao-titulo {
+    max-width: 1050px;
+    margin: 0 auto 14px;
+    color: #072B57;
+    font-size: 18px;
+}
+
+.comite-tabela-responsiva + .comite-secao-titulo {
+    margin-top: 40px;
+}
+
+.comite-funcao {
+    max-width: 1050px;
+    margin: 0 auto 15px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.comite-funcao-titulo {
+    padding: 18px 20px;
+    cursor: pointer;
+    color: #072B57;
+    font-size: 17px;
+    font-weight: 700;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.comite-funcao-titulo::-webkit-details-marker {
+    display: none;
+}
+
+.comite-funcao-titulo::after {
+    content: "+";
+    font-size: 23px;
+    font-weight: 400;
+    color: #0B4A8F;
+}
+
+.comite-funcao[open] .comite-funcao-titulo::after {
+    content: "−";
+}
+
+.comite-funcao-titulo:hover {
+    background: #f5f8fc;
+}
+
+.comite-funcao-conteudo {
+    padding: 22px;
+    border-top: 1px solid #e5e5e5;
+}
+
+.comite-tabela-responsiva {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.comite-tabela {
+    width: 100%;
+    min-width: 750px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.comite-tabela-cabecalho {
+    background: #F0F4F8;
+    color: #0B4A8F;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 14px 12px;
+    white-space: nowrap;
+}
+
+.comite-tabela-linha {
+    background: #fff;
+}
+
+.comite-tabela-linha:nth-child(even) {
+    background: #f2f4f7;
+}
+
+.comite-tabela-celula {
+    padding: 13px 12px;
+    border-bottom: 1px solid #e5e5e5;
+    color: #444;
+    font-size: 13px;
+    vertical-align: top;
+}
+
+.comite-tabela-celula-data {
+    white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+
+    .comite-conteudo {
+        padding: 30px 0;
+    }
+
+    .comite-titulo {
+        font-size: 23px;
+    }
+
+    .comite-funcao-titulo {
+        font-size: 15px;
+    }
+
+    .comite-funcao-conteudo {
+        padding: 15px;
+    }
+
+}
+
 @media (max-width: 500px) {
 
     .validador-main {
