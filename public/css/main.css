@@ -557,16 +557,7 @@ tbody tr:hover {
     outline-offset: 3px;
 }
 
-@media (max-width: 500px) {
-    .popup-exclusao,
-    .popup-edicao {
-        padding: 24px 20px;
-    }
 
-    .popup-exclusao__acoes {
-        flex-direction: column-reverse;
-    }
-}
 
 /* VALIDADOR */
 
@@ -604,17 +595,7 @@ tbody tr:hover {
     color: #D71919;
 }
 
-@media (max-width: 500px) {
 
-    .validador-main {
-        padding: 30px 0;
-    }
-
-    .validador-main h1 {
-        font-size: 23px;
-    }
-
-}
 
 
 /*Área Pesquisador*/
@@ -1218,6 +1199,10 @@ main {
 }
 
 
+
+/* ARÉA COMITE */
+
+
 .comite-conteudo {
     padding: 40px 0 50px;
 }
@@ -1370,3 +1355,39 @@ main {
 
     
 }
+
+@media (max-width: 500px) {
+    .popup-exclusao,
+    .popup-edicao {
+        padding: 24px 20px;
+    }
+
+    .popup-exclusao__acoes {
+        flex-direction: column-reverse;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .validador-main {
+        padding: 30px 0;
+    }
+
+    .validador-main h1 {
+        font-size: 23px;
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
