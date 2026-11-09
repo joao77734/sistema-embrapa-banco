@@ -21,8 +21,7 @@
 
         <nav aria-label="Principal">
             <ul class="abas">
-                <li><a href="#">Início</a></li>
-                <li><a href="#">Pesquisador</a></li>
+                <li><span>Pesquisador</span></li>
                 <li><a href="#">Sair</a></li>
             </ul>
         </nav>
@@ -42,68 +41,10 @@
                 Consulte e gerencie suas ações cadastradas no sistema.
             </p>
 
-            <details class="funcao" open>
+            <div class="pesquisador-nova-acao">
+                <a class="btn salvar">Criar Nova Ação</a>
+            </div>
 
-                <summary>Criar Nova Ação</summary>
-
-                <div class="conteudo-funcao">
-
-                    <form>
-
-                        <div class="campos">
-
-                            <div class="campo">
-                                <label for="titulo">Título da ação</label>
-
-                                <input type="text" id="titulo"
-                                    placeholder="Digite o título da ação"
-                                    required>
-                            </div>
-
-                            <div class="campo">
-                                <label for="tipo">Tipo da ação</label>
-
-                                <select id="tipo" required>
-                                    <option value="">Selecione o tipo</option>
-                                    <option>Coordenação de eventos LOCAL</option>
-                                    <option>Coordenação de evento NACIONAL</option>
-                                    <option>Coordenação de evento REGIONAL</option>
-                                </select>
-                            </div>
-
-                            <div class="campo">
-                                <label for="data">Data de realização</label>
-
-                                <input type="date" id="data" required>
-                            </div>
-
-                            <div class="campo">
-                                <label for="descricao">Descrição</label>
-
-                                <textarea id="descricao" rows="4"
-                                    placeholder="Descreva a ação"
-                                    required></textarea>
-                            </div>
-
-                        </div>
-
-                        <div class="botoes-edicao">
-
-                            <button type="reset" class="btn cancelar">
-                                Cancelar
-                            </button>
-
-                            <button type="button" class="btn salvar">
-                                Criar Ação
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-            </details>
             <details class="funcao funcao--lista" open>
 
                 <summary>Listar Minhas Ações</summary>
@@ -140,11 +81,11 @@
                                     <td>
                                         <div class="acoes">
 
-                                            <a href="#modal-editar" class="btn editar">
+                                            <a class="btn editar">
                                                 Editar
                                             </a>
 
-                                            <a href="#modal-excluir" class="btn excluir">
+                                            <a class="btn excluir">
                                                 Excluir
                                             </a>
 
@@ -166,11 +107,11 @@
                                     <td>
                                         <div class="acoes">
 
-                                            <a href="#modal-editar" class="btn editar">
+                                            <a class="btn editar">
                                                 Editar
                                             </a>
 
-                                            <a href="#modal-excluir" class="btn excluir">
+                                            <a class="btn excluir">
                                                 Excluir
                                             </a>
 
@@ -192,11 +133,11 @@
                                     <td>
                                         <div class="acoes">
 
-                                            <a href="#modal-editar" class="btn editar">
+                                            <a class="btn editar">
                                                 Editar
                                             </a>
 
-                                            <a href="#modal-excluir" class="btn excluir">
+                                            <a class="btn excluir">
                                                 Excluir
                                             </a>
 
@@ -213,110 +154,6 @@
                 </div>
 
             </details>
-
-            <!-- Popup Editar Ação-->
-            <div class="modal" id="modal-editar">
-
-                <div class="modal-conteudo">
-
-                    <a href="#acoes" class="modal-fechar">X</a>
-
-                    <h2>Editar Ação</h2>
-
-                    <form>
-
-                        <div class="campos">
-
-                            <div class="campo">
-                                <label for="editar-titulo">
-                                    Título da ação
-                                </label>
-
-                                <input type="text" id="editar-titulo"
-                                    value="Desempenho de bovinos">
-                            </div>
-
-                            <div class="campo">
-                                <label for="editar-tipo">
-                                    Tipo da ação
-                                </label>
-
-                                <select id="editar-tipo">
-                                    <option>Coordenação de eventos LOCAL</option>
-                                    <option>Coordenação de evento NACIONAL</option>
-                                    <option>Coordenação de evento REGIONAL</option>
-                                </select>
-                            </div>
-
-                            <div class="campo">
-                                <label for="editar-data">
-                                    Data de realização
-                                </label>
-
-                                <input type="date" id="editar-data"
-                                    value="2026-05-29">
-                            </div>
-
-                            <div class="campo">
-                                <label for="editar-descricao">
-                                    Descrição
-                                </label>
-
-                                <textarea id="editar-descricao" rows="4">Ação relacionada ao desempenho de bovinos.</textarea>
-                            </div>
-
-                        </div>
-
-                        <div class="botoes-edicao">
-
-                            <a href="#acoes" class="btn cancelar">
-                                Cancelar
-                            </a>
-
-                            <button type="button" class="btn salvar">
-                                Salvar Alterações
-                            </button>
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-            <!-- Popup Excluir Ação -->
-            <div class="modal" id="modal-excluir">
-
-                <div class="modal-conteudo modal-excluir">
-
-                    <a href="#acoes" class="modal-fechar">X</a>
-
-                    <h2>Excluir Ação</h2>
-
-                    <p>
-                        Tem certeza de que deseja excluir esta ação?
-                    </p>
-
-                    <p>
-                        <strong>Desempenho de bovinos</strong>
-                    </p>
-
-                    <div class="botoes-edicao">
-
-                        <a href="#acoes" class="btn cancelar">
-                            Cancelar
-                        </a>
-
-                        <button type="button" class="btn excluir">
-                            Confirmar Exclusão
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
 
         </section>
 
