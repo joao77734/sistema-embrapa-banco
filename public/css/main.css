@@ -553,8 +553,16 @@ tbody tr:hover {
 }
 
 .popup-edicao__acoes button:focus-visible {
-    outline: 3px solid #F2B705;
-    outline-offset: 3px;
+    outline: none;
+}
+
+.admin-popup {
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.admin-popup[hidden] {
+    display: none !important;
 }
 
 

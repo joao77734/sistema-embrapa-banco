@@ -57,7 +57,7 @@ function escapar($valor)
         <nav aria-label="Principal">
             <ul class="abas">
                 <li><span>Comitê</span></li>
-                <li><a href="#">Sair</a></li>
+                <li><a href="../tela_login.html">Sair</a></li>
             </ul>
         </nav>
 
