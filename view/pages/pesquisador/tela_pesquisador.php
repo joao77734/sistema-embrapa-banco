@@ -14,7 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastrar_acao'])) {
     $status = 'Pendente';
 
     if (!empty($titulo) && !empty($tipo_acao) && !empty($data_realizacao)) {
-        // Ajuste o nome da coluna no banco se necessário (ex: categoria_acao ou tipo_acao)
         $sql = "INSERT INTO Acao_pesquisador (titulo, categoria_acao, data_realizacao, descricao, status) 
                 VALUES ('$titulo', '$tipo_acao', '$data_realizacao', '$descricao', '$status')";
         
