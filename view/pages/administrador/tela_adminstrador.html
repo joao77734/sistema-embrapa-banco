@@ -139,37 +139,7 @@
                     </div>
 
 
-                </div>
 
-            </details>
-
-             <!-- LISTAR E GERENCIAR AÇÔES -->
-            <details class="funcao" open>
-
-                <summary>Listar Todas as Ações</summary>
-
-                <div class="conteudo-funcao">
-
-                    <div class="tabela-responsiva">
-
-                        <table>
-
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Setor</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="listaUsuarios">
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                           
                         </form>
 
                     </div>
@@ -192,6 +162,32 @@
     </div>
 
 </footer>
+
+<div id="modalDesativacao" class="popup-fundo admin-popup" style="display: none;" hidden>
+    <section class="popup-exclusao" role="alertdialog" aria-modal="true"
+        aria-labelledby="tituloModalDesativacao" aria-describedby="textoModalDesativacao">
+        <div class="popup-exclusao__aviso" aria-hidden="true">!</div>
+        <h1 id="tituloModalDesativacao">Desativar usuário?</h1>
+        <p id="textoModalDesativacao">Tem certeza que deseja desativar este usuário?</p>
+        <div class="popup-exclusao__acoes">
+            <button type="button" class="btn cancelar" id="cancelarDesativacao">Cancelar</button>
+            <button type="button" class="btn popup-exclusao__confirmar" id="confirmarDesativacao">
+                Confirmar desativação
+            </button>
+        </div>
+    </section>
+</div>
+
+<div id="modalEdicaoSucesso" class="popup-fundo admin-popup" style="display: none;" hidden>
+    <section class="popup-edicao" role="status" aria-labelledby="tituloModalEdicao">
+        <div class="popup-edicao__aviso" aria-hidden="true">!</div>
+        <h1 id="tituloModalEdicao">Usuário editado</h1>
+        <p>As informações do usuário foram atualizadas com sucesso.</p>
+        <div class="popup-edicao__acoes">
+            <button type="button" class="btn popup-edicao__fechar" id="fecharModalEdicao">Fechar</button>
+        </div>
+    </section>
+</div>
 
 <script>
     const apiUsuarios = 'usuarios.php';
