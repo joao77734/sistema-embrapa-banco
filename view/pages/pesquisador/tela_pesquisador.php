@@ -1,12 +1,21 @@
+<?php
+require_once '../../../config/database.php';
+
+$resultado = mysqli_query($conexao, "SELECT * FROM Acao_pesquisador ORDER BY data_realizacao DESC");
+$acoesList = [];
+if ($resultado) {
+    while ($row = mysqli_fetch_assoc($resultado)) {
+        $acoesList[] = $row;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Minhas Ações - Embrapa</title>
-
     <link rel="stylesheet" href="../../../public/css/main.css">
 </head>
 
@@ -14,29 +23,22 @@
 
 <header class="header">
     <div class="container">
-
         <a href="#" class="logo">
             <span class="logo__nome">Embrapa</span>
         </a>
-
         <nav aria-label="Principal">
             <ul class="abas">
                 <li><span>Pesquisador</span></li>
                 <li><a href="../auth.php?acao=sair">Sair</a></li>
             </ul>
         </nav>
-
     </div>
 </header>
 
 <main>
-
     <div class="container">
-
         <section class="pesquisador" id="acoes">
-
             <h1>Minhas Ações</h1>
-
             <p class="descricao">
                 Consulte e gerencie suas ações cadastradas no sistema.
             </p>
@@ -46,15 +48,10 @@
             </div>
 
             <details class="funcao funcao--lista" open>
-
                 <summary>Listar Minhas Ações</summary>
-
                 <div class="conteudo-funcao conteudo-funcao--lista">
-
                     <div class="tabela-responsiva">
-
                         <table>
-
                             <thead>
                                 <tr>
                                     <th>Título da ação</th>
@@ -64,84 +61,43 @@
                                     <th>Ações</th>
                                 </tr>
                             </thead>
-
                             <tbody>
-
-                                <tr>
-                                    <td>Desempenho de bovinos</td>
-                                    <td>Coordenação de eventos LOCAL</td>
-                                    <td>29/05/2026</td>
-
-                                    <td>
-                                        <span class="status analise">
-                                            Em análise
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="acoes">
-
-                                            <a class="btn editar" onclick="abrirPopup('pop_up_edicao.html')">Editar</a>
-                                            <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.html')">Excluir</a>
-
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Produção sustentável</td>
-                                    <td>Coordenação de evento NACIONAL</td>
-                                    <td>21/12/2024</td>
-
-                                    <td>
-                                        <span class="status aprovado">
-                                            Aprovado
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="acoes">
-
-                                            <a class="btn editar" onclick="abrirPopup('pop_up_edicao.html')">Editar</a>
-                                            <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.html')">Excluir</a>
-
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Redução da degradação do solo</td>
-                                    <td>Coordenação de evento REGIONAL</td>
-                                    <td>10/10/2026</td>
-
-                                    <td>
-                                        <span class="status recusado">
-                                            Recusado
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="acoes">
-
-                                            <a class="btn editar" onclick="abrirPopup('pop_up_edicao.html')">Editar</a>
-                                            <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.html')">Excluir</a>
-
-                                        </div>
-                                    </td>
-                                </tr>
-
+                                <?php if (empty($acoesList)): ?>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center;">Nenhuma ação cadastrada.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($acoesList as $row): ?>
+                                        <?php 
+                                            $statusClass = 'analise';
+                                            $statusText = $row['status'] ?? 'Pendente';
+                                            if ($statusText === 'Aprovado') $statusClass = 'aprovado';
+                                            if ($statusText === 'Recusado' || $statusText === 'Rejeitado') $statusClass = 'recusado';
+                                        ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($row['titulo'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($row['categoria_acao'] ?? '') ?></td>
+                                            <td><?= isset($row['data_realizacao']) ? date('d/m/Y', strtotime($row['data_realizacao'])) : '' ?></td>
+                                            <td>
+                                                <span class="status <?= $statusClass ?>">
+                                                    <?= htmlspecialchars($statusText) ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="acoes">
+                                                    <a class="btn editar" onclick="abrirPopup('pop_up_edicao.php?id=<?= $row['id'] ?>')">Editar</a>
+                                                    <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.php?id=<?= $row['id'] ?>')">Excluir</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </tbody>
-
                         </table>
-
                     </div>
-
                 </div>
-
             </details>
-
         </section>
-
     </div>
 
     <dialog id="modalPopup" style="border: none; background: transparent; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none;">
@@ -154,13 +110,14 @@
     const btnCriar = document.getElementById('btnCriarAcao');
 
     btnCriar.addEventListener('click', () => {
-        iframe.src = 'pop_up_criar_acao.html';
+        iframe.src = 'pop_up_criar_acao.php';
         modal.showModal();
     });
 
     window.fecharPopup = function() {
         modal.close();
         iframe.src = '';
+        location.reload(); 
     };
 
     function abrirPopup(pagina) {
@@ -179,17 +136,13 @@
         }
     });
 </script>
-
 </main>
 
 <footer class="footer">
-
     <div class="container">
         <span>© Embrapa – Trabalho do Mauricio</span>
-
         <a href="#">Política de privacidade</a>
     </div>
-
 </footer>
 
 </body>
