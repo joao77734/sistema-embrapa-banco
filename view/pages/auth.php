@@ -52,7 +52,7 @@ try {
 
     $destinos = [
         'Administrador' => 'administrador/tela_adminstrador.html',
-        'Pesquisador' => 'pesquisador/tela_pesquisador.html',
+        'Pesquisador' => 'pesquisador/tela_pesquisador.php',
         'Validador' => 'validador/tela_validador.html',
         'Comitê' => 'comite/tela_comite.html',
     ];
