@@ -138,74 +138,38 @@
 
                     </div>
 
-                    <!-- FORMULÁRIO DE EDIÇÃO -->
-                    <div id="areaEdicao" class="area-edicao" hidden>
 
-                        <h3>Editar Cadastro de Usuário</h3>
+                </div>
 
-                        <form id="formEditar">
+            </details>
 
-                            <input type="hidden" id="editarId">
+             <!-- LISTAR E GERENCIAR AÇÔES -->
+            <details class="funcao" open>
 
-                            <div class="campos">
+                <summary>Listar Todas as Ações</summary>
 
-                                <div class="campo">
-                                    <label for="editarNome">
-                                        Nome completo
-                                    </label>
+                <div class="conteudo-funcao">
 
-                                    <input type="text" id="editarNome"
-                                        required>
-                                </div>
+                    <div class="tabela-responsiva">
 
-                                <div class="campo">
-                                    <label for="editarMatricula">
-                                        Matrícula
-                                    </label>
+                        <table>
 
-                                    <input type="text" id="editarMatricula"
-                                        required>
-                                </div>
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Setor</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
 
-                                <div class="campo">
-                                    <label for="editarEmail">
-                                        E-mail
-                                    </label>
+                            <tbody id="listaUsuarios">
+                            </tbody>
 
-                                    <input type="email" id="editarEmail"
-                                        required>
-                                </div>
+                        </table>
 
-                                <div class="campo">
-                                    <label for="editarCargo">
-                                        Cargo
-                                    </label>
+                    </div>
 
-                                    <input type="text" id="editarCargo"
-                                        required>
-                                </div>
-
-                                <div class="campo">
-                                    <label for="editarSetor">Setor</label>
-                                    <select id="editarSetor" required></select>
-                                </div>
-
-                            </div>
-
-                            <div class="botoes-edicao">
-
-                                <button type="submit" class="btn salvar">
-                                    Salvar Alterações
-                                </button>
-
-                                <button type="button"
-                                    class="btn cancelar"
-                                    id="cancelarEdicao">
-                                    Cancelar
-                                </button>
-
-                            </div>
-
+                           
                         </form>
 
                     </div>
@@ -228,32 +192,6 @@
     </div>
 
 </footer>
-
-<div id="modalDesativacao" class="popup-fundo admin-popup" style="display: none;" hidden>
-    <section class="popup-exclusao" role="alertdialog" aria-modal="true"
-        aria-labelledby="tituloModalDesativacao" aria-describedby="textoModalDesativacao">
-        <div class="popup-exclusao__aviso" aria-hidden="true">!</div>
-        <h1 id="tituloModalDesativacao">Desativar usuário?</h1>
-        <p id="textoModalDesativacao">Tem certeza que deseja desativar este usuário?</p>
-        <div class="popup-exclusao__acoes">
-            <button type="button" class="btn cancelar" id="cancelarDesativacao">Cancelar</button>
-            <button type="button" class="btn popup-exclusao__confirmar" id="confirmarDesativacao">
-                Confirmar desativação
-            </button>
-        </div>
-    </section>
-</div>
-
-<div id="modalEdicaoSucesso" class="popup-fundo admin-popup" style="display: none;" hidden>
-    <section class="popup-edicao" role="status" aria-labelledby="tituloModalEdicao">
-        <div class="popup-edicao__aviso" aria-hidden="true">!</div>
-        <h1 id="tituloModalEdicao">Usuário editado</h1>
-        <p>As informações do usuário foram atualizadas com sucesso.</p>
-        <div class="popup-edicao__acoes">
-            <button type="button" class="btn popup-edicao__fechar" id="fecharModalEdicao">Fechar</button>
-        </div>
-    </section>
-</div>
 
 <script>
     const apiUsuarios = 'usuarios.php';
