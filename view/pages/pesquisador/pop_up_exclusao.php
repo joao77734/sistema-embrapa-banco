@@ -24,6 +24,7 @@ $acaoData = mysqli_fetch_assoc($resultado);
             <h1 id="titulo-excluir-acao">Excluir ação?</h1>
             <p id="aviso-excluir-acao">
                 Tem certeza de que deseja excluir esta ação?
+                
             </p>
             <p class="pesquisador-pop-up-exclusao__nome">
                 <strong><?= htmlspecialchars($acaoData['titulo'] ?? 'Ação') ?></strong>

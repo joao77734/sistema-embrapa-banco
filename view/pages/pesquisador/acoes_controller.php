@@ -25,6 +25,7 @@ if ($acao === 'editar') {
     $titulo = $_POST['titulo'] ?? '';
     $categoria_acao = $_POST['categoria_acao'] ?? '';
     $data_realizacao = $_POST['data_realizacao'] ?? '';
+    
     $descricao = $_POST['descricao'] ?? '';
 
     $stmt = mysqli_prepare($conexao, "UPDATE Acao_pesquisador SET titulo = ?, descricao = ?, categoria_acao = ?, data_realizacao = ? WHERE id = ?");

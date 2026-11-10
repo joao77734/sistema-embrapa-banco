@@ -26,6 +26,7 @@ if (!$acaoData) {
             <h1 id="titulo-editar-acao">Editar Ação</h1>
 
             <form action="acoes_controller.php" method="POST">
+                
                 <input type="hidden" name="acao" value="editar">
                 <input type="hidden" name="id" value="<?= $acaoData['id'] ?>">
 
