@@ -1,7 +1,6 @@
 <?php
 require_once '../../../config/database.php';
 
-// Processamento do formulário caso seja enviado via POST nesta mesma página (ou ajuste o action se preferir outro arquivo)
 $mensagemErro = '';
 $mensagemSucesso = '';
 
@@ -78,11 +77,7 @@ if ($resultado) {
                 <div class="alert alert-danger" style="color: red; margin-bottom: 15px;"><?= $mensagemErro ?></div>
             <?php endif; ?>
 
-            <div class="pesquisador-nova-acao">
-                <button type="button" class="btn salvar" id="btnCriarAcao">Criar Nova Ação</button>
-            </div>
 
-            <!-- Seção do Formulário de Criação -->
             <details class="funcao funcao--criar">
                 <summary>Criar Nova Ação</summary>
                 <div class="conteudo-funcao">
@@ -144,7 +139,6 @@ if ($resultado) {
                 </div>
             </details>
 
-            <!-- Tabela de Listagem -->
             <details class="funcao funcao--lista" open>
                 <summary>Listar Minhas Ações</summary>
                 <div class="conteudo-funcao conteudo-funcao--lista">
@@ -208,8 +202,6 @@ if ($resultado) {
     const btnCriar = document.getElementById('btnCriarAcao');
 
     btnCriar.addEventListener('click', () => {
-        // Se quiser abrir via modal popup, pode manter assim. 
-        // Caso queira abrir direto no details, basta ajustar o JS.
         iframe.src = 'pop_up_criar_acao.php';
         modal.showModal();
     });
