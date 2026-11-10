@@ -22,7 +22,7 @@
         <nav aria-label="Principal">
             <ul class="abas">
                 <li><span>Validador</span></li>
-                <li><span>Setor: SIPT</span></li>
+                <li><span id="setorValidador">Setor: Carregando...</span></li>
                 <li><a href="../auth.php?acao=sair">Sair</a></li>
             </ul>
         </nav>
@@ -110,20 +110,47 @@
     </section>
 </div>
 
+<div id="popupRecusa" class="validador-pop-up-fundo" style="display: none;" hidden>
+    <section class="validador-pop-up-recusa" role="dialog" aria-modal="true"
+        aria-labelledby="titulo-recusar-acao">
+        <h1 id="titulo-recusar-acao">Recusar Ação</h1>
+
+        <form id="formRecusa">
+            <div class="validador-pop-up-recusa__campos">
+                <div class="validador-pop-up-recusa__campo">
+                    <label for="motivoRecusa">Motivo da recusa</label>
+                    <textarea id="motivoRecusa" rows="5" maxlength="300"
+                        placeholder="Explique o motivo pelo qual a ação está sendo recusada" required></textarea>
+                </div>
+            </div>
+
+            <div class="validador-pop-up-recusa__acoes">
+                <button type="button" class="btn cancelar validador-pop-up-btn" id="cancelarRecusa">Cancelar</button>
+                <button type="submit" class="btn validador-pop-up-btn validador-pop-up-recusa__confirmar" id="confirmarRecusa">
+                    Confirmar Recusa
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
 <script>
     const listaAcoes = document.getElementById('listaAcoes');
     const popupAvaliacao = document.getElementById('popupAvaliacao');
+    const popupRecusa = document.getElementById('popupRecusa');
+    const campoMotivo = document.getElementById('motivoRecusa');
+    const setorValidador = document.getElementById('setorValidador');
     let acaoSelecionada = null;
 
     async function requisitarAvaliacoes(opcoes = {}) {
         let resposta;
         try {
-            resposta = await fetch('avaliacoes.php', {
+            resposta = await fetch('tela_validador.php', {
                 ...opcoes,
                 headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) }
             });
         } catch (erro) {
-            throw new Error('Não foi possível conectar ao servidor. Verifique o Apache do XAMPP.');
+            throw new Error('Não foi possível conectar ao servidor.');
         }
 
         let dados;
@@ -173,6 +200,9 @@
             }[acao.status] || 'status-pendente';
             seloStatus.className = `status ${statusClass}`;
             seloStatus.textContent = acao.status;
+            if (acao.status === 'Recusado' && acao.motivo_recusa) {
+                seloStatus.title = `Motivo: ${acao.motivo_recusa}`;
+            }
             celulaStatus.append(seloStatus);
             linha.append(celulaStatus);
 
@@ -195,8 +225,10 @@
     async function carregarAcoes() {
         try {
             const dados = await requisitarAvaliacoes();
+            setorValidador.textContent = `Setor: ${dados.setor || 'Não informado'}`;
             renderizarAcoes(dados.acoes);
         } catch (erro) {
+            setorValidador.textContent = 'Setor: Não informado';
             const linha = document.createElement('tr');
             const celula = document.createElement('td');
             celula.colSpan = 4;
@@ -217,21 +249,23 @@
 
     function fecharPopups() {
         definirVisibilidadePopup(popupAvaliacao, false);
+        definirVisibilidadePopup(popupRecusa, false);
         acaoSelecionada = null;
     }
 
-    async function salvarAvaliacao(status) {
+    async function salvarAvaliacao(status, motivo = '') {
         if (!acaoSelecionada) return;
         const botao = status === 'Aprovado'
             ? document.getElementById('aprovarAcao')
-            : document.getElementById('abrirRecusa');
+            : document.getElementById('confirmarRecusa');
         botao.disabled = true;
         try {
             await requisitarAvaliacoes({
                 method: 'PATCH',
                 body: JSON.stringify({
                     id: acaoSelecionada.id,
-                    status
+                    status,
+                    motivo
                 })
             });
             fecharPopups();
@@ -246,7 +280,17 @@
 
     document.getElementById('cancelarAvaliacao').addEventListener('click', fecharPopups);
     document.getElementById('aprovarAcao').addEventListener('click', () => salvarAvaliacao('Aprovado'));
-    document.getElementById('abrirRecusa').addEventListener('click', () => salvarAvaliacao('Recusado'));
+    document.getElementById('abrirRecusa').addEventListener('click', () => {
+        definirVisibilidadePopup(popupAvaliacao, false);
+        campoMotivo.value = '';
+        definirVisibilidadePopup(popupRecusa, true);
+        campoMotivo.focus();
+    });
+    document.getElementById('cancelarRecusa').addEventListener('click', fecharPopups);
+    document.getElementById('formRecusa').addEventListener('submit', (evento) => {
+        evento.preventDefault();
+        salvarAvaliacao('Recusado', campoMotivo.value);
+    });
 
     carregarAcoes();
 </script>
