@@ -1,3 +1,6 @@
+<?php
+$id = $_GET['id'] ?? '';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -12,18 +15,21 @@
             aria-labelledby="titulo-recusar-acao">
             <h1 id="titulo-recusar-acao">Recusar Ação</h1>
 
-            <form>
+            <form action="avaliacoes.php" method="POST">
+                <input type="hidden" name="acao" value="recusar">
+                <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
+
                 <div class="validador-pop-up-recusa__campos">
                     <div class="validador-pop-up-recusa__campo">
                         <label for="motivo-recusa">Motivo da recusa</label>
-                        <textarea id="motivo-recusa" rows="5"
+                        <textarea id="motivo-recusa" name="motivo" rows="5" maxlength="300"
                             placeholder="Explique o motivo pelo qual a ação está sendo recusada" required></textarea>
                     </div>
                 </div>
 
                 <div class="validador-pop-up-recusa__acoes">
-                    <button type="button" class="btn cancelar validador-pop-up-btn">Cancelar</button>
-                    <button type="button" class="btn validador-pop-up-btn validador-pop-up-recusa__confirmar">
+                    <button type="button" class="btn cancelar validador-pop-up-btn" onclick="parent.fecharPopup()">Cancelar</button>
+                    <button type="submit" class="btn validador-pop-up-btn validador-pop-up-recusa__confirmar">
                         Confirmar Recusa
                     </button>
                 </div>

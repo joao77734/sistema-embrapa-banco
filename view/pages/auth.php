@@ -39,8 +39,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
 }
 
 $dados = json_decode(file_get_contents('php://input'), true);
-$email = trim((string) ($dados['email'] ?? ''));
-$senha = (string) ($dados['senha'] ?? '');
+$email = trim((string) ($dados['email'] ?? $_POST['usuario'] ?? ''));
+$senha = (string) ($dados['senha'] ?? $_POST['senha'] ?? '');
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $senha === '') {
     responderLogin(422, ['erro' => 'Informe um e-mail válido e a senha.']);
@@ -53,7 +53,7 @@ try {
     $destinos = [
         'Administrador' => 'administrador/tela_adminstrador.html',
         'Pesquisador' => 'pesquisador/tela_pesquisador.php',
-        'Validador' => 'validador/tela_validador.html',
+        'Validador' => 'validador/tela_validador.php',
         'Comitê' => 'comite/tela_comite.html',
     ];
     $usuarioAutenticado = null;
@@ -112,7 +112,9 @@ try {
         'samesite' => 'Lax',
         'path' => '/',
     ]);
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     session_regenerate_id(true);
     $_SESSION['usuario'] = [
         'id' => $usuarioAutenticado['id'],

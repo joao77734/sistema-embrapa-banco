@@ -1,116 +1,205 @@
 <?php
-require_once __DIR__ . '/../../../config/database.php';
-
-header('Content-Type: application/json; charset=utf-8');
+require_once '../../../config/database.php';
 session_start();
 
-function responder(int $codigo, array $dados): void
-{
-    http_response_code($codigo);
-    echo json_encode($dados, JSON_UNESCAPED_UNICODE);
+if (($_SESSION['usuario']['tipo'] ?? null) !== 'Validador') {
+    header("Location: ../auth.php");
     exit;
 }
 
-function garantirColunaMotivoRecusa(mysqli $conexao): void
-{
-    $coluna = mysqli_query($conexao, "SHOW COLUMNS FROM Acao_pesquisador LIKE 'motivo_recusa'");
-    $existe = mysqli_num_rows($coluna) > 0;
-    mysqli_free_result($coluna);
+$idValidador = (int) ($_SESSION['usuario']['id'] ?? 0);
+$emailUsuario = $_SESSION['usuario']['email'] ?? '';
+$nomeSetor = 'Não informado';
 
-    if (!$existe) {
-        mysqli_query($conexao, 'ALTER TABLE Acao_pesquisador ADD COLUMN motivo_recusa VARCHAR(300) NULL');
-    }
-}
-
-if (($_SESSION['usuario']['tipo'] ?? null) !== 'Validador') {
-    responder(401, ['erro' => 'Entre com uma conta de Validador para avaliar ações.']);
-}
-
-try {
-    garantirColunaMotivoRecusa($conexao);
-    $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-
-    if ($metodo === 'GET') {
-        $setor = null;
-        $idValidador = (int) ($_SESSION['usuario']['id'] ?? 0);
-
-        if ($idValidador > 0) {
-            $stmtSetor = mysqli_prepare(
-                $conexao,
-                'SELECT setor.nome FROM Validador AS validador
-                 INNER JOIN Setor AS setor ON setor.id = validador.id_setor
-                 WHERE validador.id = ? LIMIT 1'
-            );
-            mysqli_stmt_bind_param($stmtSetor, 'i', $idValidador);
-            mysqli_stmt_execute($stmtSetor);
-            $linhaSetor = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtSetor));
-            mysqli_stmt_close($stmtSetor);
-            $setor = $linhaSetor['nome'] ?? null;
-        }
-
-        $sql = '
-            SELECT
-                acao.id,
-                acao.titulo,
-                acao.descricao,
-                acao.categoria_acao,
-                acao.data_realizacao,
-                acao.status,
-                acao.motivo_recusa,
-                pesquisador.nome AS pesquisador
-            FROM Acao_pesquisador AS acao
-            INNER JOIN Pesquisador AS pesquisador ON pesquisador.id = acao.id_pesquisador
-            ORDER BY CASE WHEN acao.status = "Pendente" THEN 0 ELSE 1 END,
-                acao.data_realizacao DESC, acao.id DESC
-        ';
-        $resultado = mysqli_query($conexao, $sql);
-        $acoes = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
-        mysqli_free_result($resultado);
-        responder(200, ['acoes' => $acoes, 'setor' => $setor]);
-    }
-
-    if ($metodo !== 'PATCH') {
-        header('Allow: GET, PATCH');
-        responder(405, ['erro' => 'Método não permitido.']);
-    }
-
-    $dados = json_decode(file_get_contents('php://input'), true);
-    if (!is_array($dados)) {
-        responder(400, ['erro' => 'Requisição inválida.']);
-    }
-
-    $id = filter_var($dados['id'] ?? null, FILTER_VALIDATE_INT);
-    $status = $dados['status'] ?? '';
-    $motivo = trim((string) ($dados['motivo'] ?? ''));
-
-    if (!$id || !in_array($status, ['Aprovado', 'Recusado'], true)) {
-        responder(422, ['erro' => 'Ação ou avaliação inválida.']);
-    }
-
-    if ($status === 'Recusado') {
-        $tamanhoMotivo = function_exists('mb_strlen') ? mb_strlen($motivo, 'UTF-8') : strlen($motivo);
-        if ($motivo === '' || $tamanhoMotivo > 300) {
-            responder(422, ['erro' => 'Explique o motivo da recusa em até 300 caracteres.']);
-        }
-    } else {
-        $motivo = null;
-    }
-
-    $stmt = mysqli_prepare(
+if ($idValidador > 0) {
+    $stmtSetor = mysqli_prepare(
         $conexao,
-        "UPDATE Acao_pesquisador SET status = ?, motivo_recusa = ? WHERE id = ? AND status = 'Pendente'"
+        'SELECT setor.nome FROM Validador AS validador
+         INNER JOIN Setor AS setor ON setor.id = validador.id_setor
+         WHERE validador.id = ? LIMIT 1'
     );
-    mysqli_stmt_bind_param($stmt, 'ssi', $status, $motivo, $id);
-    mysqli_stmt_execute($stmt);
-    $alteradas = mysqli_stmt_affected_rows($stmt);
-    mysqli_stmt_close($stmt);
+    mysqli_stmt_bind_param($stmtSetor, 'i', $idValidador);
+    mysqli_stmt_execute($stmtSetor);
+    $linhaSetor = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtSetor));
+    mysqli_stmt_close($stmtSetor);
+    if (!empty($linhaSetor['nome'])) {
+        $nomeSetor = $linhaSetor['nome'];
+    }
+} elseif (!empty($emailUsuario)) {
+    $stmtSetor = mysqli_prepare(
+        $conexao,
+        'SELECT setor.nome FROM Validador AS validador
+         INNER JOIN Setor AS setor ON setor.id = validador.id_setor
+         WHERE validador.email = ? LIMIT 1'
+    );
+    mysqli_stmt_bind_param($stmtSetor, 's', $emailUsuario);
+    mysqli_stmt_execute($stmtSetor);
+    $linhaSetor = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtSetor));
+    mysqli_stmt_close($stmtSetor);
+    if (!empty($linhaSetor['nome'])) {
+        $nomeSetor = $linhaSetor['nome'];
+    }
+}
 
-    if ($alteradas !== 1) {
-        responder(409, ['erro' => 'A ação não existe ou já foi avaliada. Atualize a lista e tente novamente.']);
+$sql = '
+    SELECT
+        acao.id,
+        acao.titulo,
+        acao.descricao,
+        acao.categoria_acao,
+        acao.data_realizacao,
+        acao.status,
+        acao.motivo_recusa,
+        pesquisador.nome AS pesquisador
+    FROM Acao_pesquisador AS acao
+    INNER JOIN Pesquisador AS pesquisador ON pesquisador.id = acao.id_pesquisador
+    ORDER BY CASE WHEN acao.status = "Pendente" THEN 0 ELSE 1 END,
+        acao.data_realizacao DESC, acao.id DESC
+';
+$resultado = mysqli_query($conexao, $sql);
+$acoesList = [];
+if ($resultado) {
+    while ($row = mysqli_fetch_assoc($resultado)) {
+        $acoesList[] = $row;
+    }
+    mysqli_free_result($resultado);
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Validador - Embrapa</title>
+    <link rel="stylesheet" href="../../../public/css/main.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div class="container">
+        <a href="#" class="logo">
+            <span class="logo__nome">Embrapa</span>
+        </a>
+        <nav aria-label="Principal">
+            <ul class="abas">
+                <li><span>Validador</span></li>
+                <li><span>Setor: <?= htmlspecialchars($nomeSetor) ?></span></li>
+                <li><a href="../auth.php?acao=sair">Sair</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <section class="pesquisador" id="acoes">
+            <h1>Painel do Validador</h1>
+            <p class="descricao">
+                Consulte e avalie as ações cadastradas pelos pesquisadores.
+            </p>
+
+            <details class="funcao funcao--lista" open>
+                <summary>Listar Ações dos Pesquisadores</summary>
+                <div class="conteudo-funcao conteudo-funcao--lista">
+                    <div class="tabela-responsiva">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Pesquisador</th>
+                                    <th>Título da ação</th>
+                                    <th>Tipo da ação</th>
+                                    <th>Data de realização</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($acoesList)): ?>
+                                    <tr>
+                                        <td colspan="6" style="text-align: center;">Nenhuma ação cadastrada.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($acoesList as $row): ?>
+                                        <?php 
+                                            $statusClass = 'analise';
+                                            $statusText = $row['status'] ?? 'Pendente';
+                                            if ($statusText === 'Aprovado') $statusClass = 'aprovado';
+                                            if ($statusText === 'Recusado' || $statusText === 'Rejeitado') $statusClass = 'recusado';
+                                        ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($row['pesquisador'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($row['titulo'] ?? '') ?></td>
+                                            <td><?= htmlspecialchars($row['categoria_acao'] ?? '') ?></td>
+                                            <td><?= isset($row['data_realizacao']) ? date('d/m/Y', strtotime($row['data_realizacao'])) : '' ?></td>
+                                            <td>
+                                                <span class="status <?= $statusClass ?>" <?= ($statusText === 'Recusado' && !empty($row['motivo_recusa'])) ? 'title="Motivo: ' . htmlspecialchars($row['motivo_recusa']) . '"' : '' ?>>
+                                                    <?= htmlspecialchars($statusText) ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="acoes">
+                                                    <?php if ($statusText === 'Pendente'): ?>
+                                                        <a class="btn editar" onclick="abrirPopup('pop_up_avaliacao.php?id=<?= $row['id'] ?>')">Avaliar</a>
+                                                    <?php else: ?>
+                                                        <span>Avaliada</span>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </details>
+        </section>
+    </div>
+
+    <dialog id="modalPopup" style="border: none; background: transparent; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none;">
+        <iframe id="iframePopup" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+    </dialog>
+
+<script>
+    const modal = document.getElementById('modalPopup');
+    const iframe = document.getElementById('iframePopup');
+
+    window.fecharPopup = function() {
+        modal.close();
+        iframe.src = '';
+        location.reload(); 
+    };
+
+    window.abrirRecusa = function(id) {
+        iframe.src = 'pop_up_recusa.php?id=' + id;
+    };
+
+    function abrirPopup(pagina) {
+        iframe.src = pagina;
+        modal.showModal();
     }
 
-    responder(200, ['mensagem' => 'Avaliação salva com sucesso.']);
-} catch (mysqli_sql_exception $erro) {
-    error_log($erro->getMessage());
-    responder(500, ['erro' => 'Erro ao acessar as ações no banco de dados.']);
-}
+    modal.addEventListener('click', (event) => {
+        const rect = modal.getBoundingClientRect();
+        const isInDialog = (
+            rect.top <= event.clientY && event.clientY <= rect.bottom &&
+            rect.left <= event.clientX && event.clientX <= rect.right
+        );
+        if (!isInDialog) {
+            window.fecharPopup();
+        }
+    });
+</script>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <span>© Embrapa – Trabalho do Mauricio</span>
+        <a href="#">Política de privacidade</a>
+    </div>
+</footer>
+
+</body>
+</html>
