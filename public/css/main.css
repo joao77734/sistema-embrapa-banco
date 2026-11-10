@@ -940,10 +940,6 @@ main {
 }
 
 
-.pesquisador .pesquisador-nova-acao {
-    margin: 0 0 20px;
-}
-
 .pesquisador-pop-up-fundo {
     position: fixed;
     inset: 0;
