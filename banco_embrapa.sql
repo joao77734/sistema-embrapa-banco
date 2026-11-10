@@ -14,6 +14,7 @@ CREATE TABLE Pesquisador (
     email VARCHAR(100) NOT NULL,
     matricula VARCHAR(20) NOT NULL UNIQUE,
     funcao VARCHAR(13) NOT NULL,
+    senha_hash VARCHAR(255) NULL,
     id_setor INT NOT NULL,
     score INT DEFAULT 0,
     status BOOLEAN NOT NULL DEFAULT TRUE,
@@ -26,6 +27,7 @@ CREATE TABLE Validador (
     email VARCHAR(100) NOT NULL,
     matricula VARCHAR(20) NOT NULL UNIQUE,
     funcao VARCHAR(13) NOT NULL,
+    senha_hash VARCHAR(255) NULL,
     id_setor INT NOT NULL,
     status BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (id_setor) REFERENCES Setor(id)
@@ -63,7 +65,8 @@ CREATE TABLE Administrador (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     funcao VARCHAR(13) NOT NULL,
-    status BOOLEAN
+    senha_hash VARCHAR(255) NULL,
+    status BOOLEAN NOT NULL DEFAULT TRUE
 );
  
 CREATE TABLE Log_auditor (
@@ -73,6 +76,14 @@ CREATE TABLE Log_auditor (
     data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
     matricula_usuario VARCHAR(20) NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS Usuarios_conta (
+    email VARCHAR(100) PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    status BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 INSERT INTO Setor (nome)
 SELECT 'SIPT' WHERE NOT EXISTS (
