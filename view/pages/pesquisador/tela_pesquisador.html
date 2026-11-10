@@ -50,7 +50,7 @@
 
                 <div class="conteudo-funcao">
 
-                    <form class="pesquisador-formulario">
+                    <form class="pesquisador-formulario" id="formulario-acao">
 
                         <div class="campos">
 
@@ -61,6 +61,7 @@
                                     id="titulo_acao"
                                     name="titulo_acao"
                                     placeholder="Digite o título da ação"
+                                    maxlength="100"
                                     required
                                 >
                             </div>
@@ -95,6 +96,7 @@
                                     id="descricao_acao"
                                     name="descricao_acao"
                                     placeholder="Descreva os detalhes da ação"
+                                    maxlength="300"
                                     required
                                 ></textarea>
                             </div>
@@ -131,69 +133,11 @@
                                     <th>Tipo da ação</th>
                                     <th>Data de realização</th>
                                     <th>Status</th>
-                                    <th>Ações</th>
                                 </tr>
                             </thead>
 
-                            <tbody>
-
-                                <tr>
-                                    <td>Desempenho de bovinos</td>
-                                    <td>Coordenação de eventos LOCAL</td>
-                                    <td>29/05/2026</td>
-
-                                    <td>
-                                        <span class="status analise">
-                                            Em análise
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="acoes">
-                                            <a class="btn editar">Editar</a>
-                                            <a class="btn excluir">Excluir</a>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Produção sustentável</td>
-                                    <td>Coordenação de evento NACIONAL</td>
-                                    <td>21/12/2024</td>
-
-                                    <td>
-                                        <span class="status aprovado">
-                                            Aprovado
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="acoes">
-                                            <a class="btn editar">Editar</a>
-                                            <a class="btn excluir">Excluir</a>
-                                        </div>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>Redução da degradação do solo</td>
-                                    <td>Coordenação de evento REGIONAL</td>
-                                    <td>10/10/2026</td>
-
-                                    <td>
-                                        <span class="status recusado">
-                                            Recusado
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <div class="acoes">
-                                            <a class="btn editar">Editar</a>
-                                            <a class="btn excluir">Excluir</a>
-                                        </div>
-                                    </td>
-                                </tr>
-
+                            <tbody id="lista-acoes">
+                                <tr><td colspan="4">Carregando ações...</td></tr>
                             </tbody>
 
                         </table>
@@ -203,6 +147,8 @@
                 </div>
 
             </details>
+
+            <p id="mensagem-acoes" role="status" aria-live="polite"></p>
 
         </section>
 
@@ -219,6 +165,112 @@
     </div>
 
 </footer>
+
+<script>
+    const endpointAcoes = './acoes.php';
+    const corpoTabela = document.getElementById('lista-acoes');
+    const mensagemAcoes = document.getElementById('mensagem-acoes');
+    const formularioCriacao = document.getElementById('formulario-acao');
+    const categorias = {
+        local: 'Coordenação de eventos LOCAL',
+        nacional: 'Coordenação de evento NACIONAL',
+        regional: 'Coordenação de evento REGIONAL',
+        'Coordenação de eventos LOCAL': 'Coordenação de eventos LOCAL',
+        'Coordenação de evento NACIONAL': 'Coordenação de evento NACIONAL',
+        'Coordenação de evento REGIONAL': 'Coordenação de evento REGIONAL'
+    };
+
+    async function requisitar(url, opcoes = {}) {
+        const resposta = await fetch(url, {
+            ...opcoes,
+            headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) }
+        });
+        const dados = await resposta.json();
+        if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível concluir a operação.');
+        return dados;
+    }
+
+    function mostrarMensagem(texto, erro = false) {
+        mensagemAcoes.textContent = texto;
+        mensagemAcoes.setAttribute('role', erro ? 'alert' : 'status');
+    }
+
+    function valorStatus(status) {
+        return status === 'Pendente' ? ['Em análise', 'analise'] : [status, status.toLowerCase()];
+    }
+
+    function renderizarAcoes(acoes) {
+        corpoTabela.replaceChildren();
+        if (acoes.length === 0) {
+            const linha = document.createElement('tr');
+            const celula = document.createElement('td');
+            celula.colSpan = 4;
+            celula.textContent = 'Você ainda não cadastrou ações.';
+            linha.append(celula);
+            corpoTabela.append(linha);
+            return;
+        }
+
+        for (const acao of acoes) {
+            const linha = document.createElement('tr');
+            for (const texto of [
+                acao.titulo,
+                categorias[acao.categoria_acao] || acao.categoria_acao,
+                new Date(`${acao.data_realizacao}T00:00:00`).toLocaleDateString('pt-BR')
+            ]) {
+                const celula = document.createElement('td');
+                celula.textContent = texto;
+                linha.append(celula);
+            }
+
+            const celulaStatus = document.createElement('td');
+            const [textoStatus, classeStatus] = valorStatus(acao.status);
+            const etiqueta = document.createElement('span');
+            etiqueta.className = `status ${classeStatus}`;
+            etiqueta.textContent = textoStatus;
+            celulaStatus.append(etiqueta);
+            linha.append(celulaStatus);
+
+            corpoTabela.append(linha);
+        }
+    }
+
+    async function carregarAcoes() {
+        try {
+            const dados = await requisitar(endpointAcoes);
+            renderizarAcoes(dados.acoes || []);
+        } catch (erro) {
+            corpoTabela.replaceChildren();
+            const linha = document.createElement('tr');
+            const celula = document.createElement('td');
+            celula.colSpan = 4;
+            celula.textContent = erro.message;
+            linha.append(celula);
+            corpoTabela.append(linha);
+        }
+    }
+
+    function dadosFormulario(formulario) {
+        return Object.fromEntries(new FormData(formulario).entries());
+    }
+
+    formularioCriacao.addEventListener('submit', async (evento) => {
+        evento.preventDefault();
+        try {
+            const dados = await requisitar(endpointAcoes, {
+                method: 'POST',
+                body: JSON.stringify(dadosFormulario(formularioCriacao))
+            });
+            formularioCriacao.reset();
+            mostrarMensagem(dados.mensagem);
+            await carregarAcoes();
+        } catch (erro) {
+            mostrarMensagem(erro.message, true);
+        }
+    });
+
+    carregarAcoes();
+</script>
 
 </body>
 </html>
