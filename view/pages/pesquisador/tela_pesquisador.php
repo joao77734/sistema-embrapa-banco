@@ -1,25 +1,39 @@
 <?php
-require_once __DIR__ . '/acoes_controller.php';
+require_once '../../../config/database.php';
 
-$mensagens = [
-    'sucesso' => 'Ação cadastrada com sucesso e enviada para análise.',
-    'campos' => 'Confira os dados informados e tente novamente.',
-    'banco' => 'Não foi possível cadastrar a ação. Tente novamente.',
-];
-$tipoMensagem = isset($_GET['sucesso']) ? 'sucesso' : (string) ($_GET['erro'] ?? '');
-$mensagem = $mensagens[$tipoMensagem] ?? '';
+$mensagemErro = '';
+$mensagemSucesso = '';
 
-$stmt = mysqli_prepare(
-    $conexao,
-    'SELECT titulo, descricao, categoria_acao, data_realizacao, status
-     FROM Acao_pesquisador
-     WHERE id_pesquisador = ?
-     ORDER BY data_realizacao DESC, id DESC'
-);
-mysqli_stmt_bind_param($stmt, 'i', $idPesquisador);
-mysqli_stmt_execute($stmt);
-$acoesList = mysqli_fetch_all(mysqli_stmt_get_result($stmt), MYSQLI_ASSOC);
-mysqli_stmt_close($stmt);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastrar_acao'])) {
+    $titulo = mysqli_real_escape_string($conexao, $_POST['titulo_acao'] ?? '');
+    $tipo_acao = mysqli_real_escape_string($conexao, $_POST['tipo_acao'] ?? '');
+    $data_realizacao = mysqli_real_escape_string($conexao, $_POST['data_realizacao'] ?? '');
+    $descricao = mysqli_real_escape_string($conexao, $_POST['descricao_acao'] ?? '');
+    
+    // Status inicial padrão
+    $status = 'Pendente';
+
+    if (!empty($titulo) && !empty($tipo_acao) && !empty($data_realizacao)) {
+        $sql = "INSERT INTO Acao_pesquisador (titulo, categoria_acao, data_realizacao, descricao, status) 
+                VALUES ('$titulo', '$tipo_acao', '$data_realizacao', '$descricao', '$status')";
+        
+        if (mysqli_query($conexao, $sql)) {
+            $mensagemSucesso = "Ação cadastrada com sucesso!";
+        } else {
+            $mensagemErro = "Erro ao cadastrar: " . mysqli_error($conexao);
+        }
+    } else {
+        $mensagemErro = "Preencha todos os campos obrigatórios.";
+    }
+}
+
+$resultado = mysqli_query($conexao, "SELECT * FROM Acao_pesquisador ORDER BY data_realizacao DESC");
+$acoesList = [];
+if ($resultado) {
+    while ($row = mysqli_fetch_assoc($resultado)) {
+        $acoesList[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -52,20 +66,22 @@ mysqli_stmt_close($stmt);
         <section class="pesquisador" id="acoes">
             <h1>Minhas Ações</h1>
             <p class="descricao">
-                Consulte suas ações e cadastre novas ações para análise.
+                Consulte e gerencie suas ações cadastradas no sistema.
             </p>
 
-            <?php if ($mensagem !== ''): ?>
-                <p role="status" style="color: <?= isset($_GET['sucesso']) ? 'green' : '#b00020' ?>; margin-bottom: 15px;">
-                    <?= htmlspecialchars($mensagem, ENT_QUOTES, 'UTF-8') ?>
-                </p>
+            <?php if (!empty($mensagemSucesso)): ?>
+                <div class="alert alert-success" style="color: green; margin-bottom: 15px;"><?= $mensagemSucesso ?></div>
             <?php endif; ?>
+            <?php if (!empty($mensagemErro)): ?>
+                <div class="alert alert-danger" style="color: red; margin-bottom: 15px;"><?= $mensagemErro ?></div>
+            <?php endif; ?>
+
 
             <details class="funcao funcao--criar">
                 <summary>Criar Nova Ação</summary>
                 <div class="conteudo-funcao">
-                    <form class="pesquisador-formulario" method="POST" action="acoes_controller.php">
-                        <input type="hidden" name="acao" value="criar">
+                    <form class="pesquisador-formulario" method="POST" action="">
+                        <input type="hidden" name="cadastrar_acao" value="1">
                         <div class="campos">
                             <div class="campo">
                                 <label for="titulo_acao">Título da ação</label>
@@ -74,7 +90,6 @@ mysqli_stmt_close($stmt);
                                     id="titulo_acao"
                                     name="titulo_acao"
                                     placeholder="Digite o título da ação"
-                                    maxlength="100"
                                     required
                                 >
                             </div>
@@ -109,7 +124,6 @@ mysqli_stmt_close($stmt);
                                     id="descricao_acao"
                                     name="descricao_acao"
                                     placeholder="Descreva os detalhes da ação"
-                                    maxlength="300"
                                     required
                                 ></textarea>
                             </div>
@@ -135,12 +149,13 @@ mysqli_stmt_close($stmt);
                                     <th>Tipo da ação</th>
                                     <th>Data de realização</th>
                                     <th>Status</th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (empty($acoesList)): ?>
                                     <tr>
-                                        <td colspan="4" style="text-align: center;">Nenhuma ação cadastrada.</td>
+                                        <td colspan="5" style="text-align: center;">Nenhuma ação cadastrada.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($acoesList as $row): ?>
@@ -159,6 +174,12 @@ mysqli_stmt_close($stmt);
                                                     <?= htmlspecialchars($statusText) ?>
                                                 </span>
                                             </td>
+                                            <td>
+                                                <div class="acoes">
+                                                    <a class="btn editar" onclick="abrirPopup('pop_up_edicao.php?id=<?= $row['id'] ?>')">Editar</a>
+                                                    <a class="btn excluir" onclick="abrirPopup('pop_up_exclusao.php?id=<?= $row['id'] ?>')">Excluir</a>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
@@ -170,6 +191,42 @@ mysqli_stmt_close($stmt);
         </section>
     </div>
 
+    <dialog id="modalPopup" style="border: none; background: transparent; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none;">
+        <iframe id="iframePopup" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+    </dialog>
+
+<script>
+    const modal = document.getElementById('modalPopup');
+    const iframe = document.getElementById('iframePopup');
+    const btnCriar = document.getElementById('btnCriarAcao');
+
+    btnCriar.addEventListener('click', () => {
+        iframe.src = 'pop_up_criar_acao.php';
+        modal.showModal();
+    });
+
+    window.fecharPopup = function() {
+        modal.close();
+        iframe.src = '';
+        location.reload(); 
+    };
+
+    function abrirPopup(pagina) {
+        iframe.src = pagina;
+        modal.showModal();
+    }
+
+    modal.addEventListener('click', (event) => {
+        const rect = modal.getBoundingClientRect();
+        const isInDialog = (
+            rect.top <= event.clientY && event.clientY <= rect.bottom &&
+            rect.left <= event.clientX && event.clientX <= rect.right
+        );
+        if (!isInDialog) {
+            window.fecharPopup();
+        }
+    });
+</script>
 </main>
 
 <footer class="footer">
