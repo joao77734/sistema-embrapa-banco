@@ -1,6 +1,8 @@
 <?php
 if (($_GET['acao'] ?? '') === 'sair') {
-    session_start();
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
     $_SESSION = [];
 
     if (ini_get('session.use_cookies')) {
@@ -17,7 +19,7 @@ if (($_GET['acao'] ?? '') === 'sair') {
     }
 
     session_destroy();
-    header('Location: tela_login.html', true, 303);
+    header('Location: tela_login.php', true, 303);
     exit;
 }
 
@@ -51,16 +53,17 @@ try {
     garantirContasDemonstracao($conexao);
 
     $destinos = [
-        'Administrador' => 'administrador/tela_adminstrador.html',
+        'Administrador' => 'administrador/tela_adminstrador.php',
         'Pesquisador' => 'pesquisador/tela_pesquisador.php',
         'Validador' => 'validador/tela_validador.php',
-        'Comitê' => 'comite/tela_comite.html',
+        'Comitê' => 'comite/tela_comite.php',
     ];
     $usuarioAutenticado = null;
 
+    // 1. Verificação nas contas de demonstração
     $stmtDemo = mysqli_prepare(
         $conexao,
-        'SELECT email, nome, tipo, senha_hash FROM Usuarios_conta WHERE email = ? AND status = 1 LIMIT 1'
+        'SELECT email, nome, tipo, senha_hash, status FROM Usuarios_conta WHERE email = ? LIMIT 1'
     );
     mysqli_stmt_bind_param($stmtDemo, 's', $email);
     mysqli_stmt_execute($stmtDemo);
@@ -68,21 +71,28 @@ try {
     $contaDemo = mysqli_fetch_assoc($resultadoDemo);
     mysqli_stmt_close($stmtDemo);
 
-    if ($contaDemo && password_verify($senha, $contaDemo['senha_hash'])) {
-        $usuarioAutenticado = [
-            'id' => 0,
-            'nome' => $contaDemo['nome'],
-            'email' => $contaDemo['email'],
-            'tipo' => $contaDemo['tipo'],
-            'destino' => $destinos[$contaDemo['tipo']],
-        ];
+    if ($contaDemo) {
+        if (isset($contaDemo['status']) && (int)$contaDemo['status'] === 0) {
+            responderLogin(403, ['erro' => 'Sua conta está desativada. Entre em contato com o administrador.']);
+        }
+        if (password_verify($senha, $contaDemo['senha_hash'])) {
+            $usuarioAutenticado = [
+                'id' => 0,
+                'nome' => $contaDemo['nome'],
+                'email' => $contaDemo['email'],
+                'tipo' => $contaDemo['tipo'],
+                'destino' => $destinos[$contaDemo['tipo']],
+            ];
+        }
     }
 
+    // 2. Verificação nas tabelas normais de Administrador, Pesquisador e Validador
     foreach (['Administrador', 'Pesquisador', 'Validador'] as $tipo) {
         if ($usuarioAutenticado) break;
+        
         $stmt = mysqli_prepare(
             $conexao,
-            "SELECT id, nome, email, senha_hash FROM `{$tipo}` WHERE email = ? AND COALESCE(status, 1) = 1 LIMIT 1"
+            "SELECT id, nome, email, senha_hash, status FROM `{$tipo}` WHERE email = ? LIMIT 1"
         );
         mysqli_stmt_bind_param($stmt, 's', $email);
         mysqli_stmt_execute($stmt);
@@ -90,20 +100,27 @@ try {
         $usuario = mysqli_fetch_assoc($resultado);
         mysqli_stmt_close($stmt);
 
-        if ($usuario && password_verify($senha, $usuario['senha_hash'])) {
-            $usuarioAutenticado = [
-                'id' => (int) $usuario['id'],
-                'nome' => $usuario['nome'],
-                'email' => $usuario['email'],
-                'tipo' => $tipo,
-                'destino' => $destinos[$tipo],
-            ];
-            break;
+        if ($usuario) {
+            // Valida se o usuário está desativado (status = 0)
+            if (isset($usuario['status']) && (int)$usuario['status'] === 0) {
+                responderLogin(403, ['erro' => 'Sua conta está desativada. Entre em contato com o administrador.']);
+            }
+
+            if (password_verify($senha, $usuario['senha_hash'])) {
+                $usuarioAutenticado = [
+                    'id' => (int) $usuario['id'],
+                    'nome' => $usuario['nome'],
+                    'email' => $usuario['email'],
+                    'tipo' => $tipo,
+                    'destino' => $destinos[$tipo],
+                ];
+                break;
+            }
         }
     }
 
     if (!$usuarioAutenticado) {
-        responderLogin(401, ['erro' => 'E-mail ou senha incorretos, ou usuário desativado.']);
+        responderLogin(401, ['erro' => 'E-mail ou senha incorretos.']);
     }
 
     session_set_cookie_params([

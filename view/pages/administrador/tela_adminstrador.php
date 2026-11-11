@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -38,11 +37,6 @@
 
             <h1>Painel do Administrador</h1>
 
-            <p class="descricao">
-                Gerencie os usuários cadastrados no sistema. A senha inicial dos novos usuários é 1234.
-            </p>
-
-            <!-- CADASTRAR NOVO USUÁRIO -->
             <details class="funcao">
 
                 <summary>Cadastrar Novo Usuário</summary>
@@ -75,28 +69,30 @@
                             </div>
 
                             <div class="campo">
-                                <label for="tipo">Cargo</label>
-                                <select id="tipo" required>
-                                    <option value="">Selecione</option>
-                                    <option value="Pesquisador">Pesquisador</option>
-                                    <option value="Validador">Validador</option>
-                                    <option value="Comitê">Comitê</option>
-                                </select>
+                                <label for="senha">Senha</label>
+                                <input type="password" id="senha"
+                                    placeholder="Digite a senha">
                             </div>
 
-                            <div class="campo">
+                            <div class="campo" style="grid-column: 1 / -1;">
+                                <label>Funções / Cargos do Usuário</label>
+                                <div style="display: flex; gap: 20px; margin-top: 8px;">
+                                    <label><input type="checkbox" name="funcao" value="Pesquisador" id="checkPesquisador"> Pesquisador</label>
+                                    <label><input type="checkbox" name="funcao" value="Validador" id="checkValidador"> Validador</label>
+                                    <label><input type="checkbox" name="funcao" value="Comitê"> Comitê</label>
+                                </div>
+                            </div>
+
+                            <div class="campo" id="blocoSetor" style="display: none;">
                                 <label for="setor">Setor</label>
-                                <select id="setor" required>
-                                    <option value="">Selecione</option>
-                                    <option value="SIPT">SIPT</option>
-                                    <option value="SPAT">SPAT</option>
-                                    <option value="NCO">NCO</option>
+                                <select id="setor">
+                                    <option value="">Selecione o setor</option>
                                 </select>
                             </div>
 
                         </div>
 
-                        <button type="submit" class="btn salvar">
+                        <button type="submit" class="btn salvar" style="margin-top: 15px;">
                             Cadastrar Usuário
                         </button>
 
@@ -106,7 +102,53 @@
 
             </details>
 
-            <!-- LISTAR E GERENCIAR USUÁRIOS -->
+            <details class="funcao" id="areaEdicao" hidden>
+
+                <summary>Editar Usuário</summary>
+
+                <div class="conteudo-funcao">
+
+                    <form id="formEditar">
+                        <input type="hidden" id="editarId">
+                        <input type="hidden" id="editarTipoOriginal">
+
+                        <div class="campos">
+
+                            <div class="campo">
+                                <label for="editarNome">Nome completo</label>
+                                <input type="text" id="editarNome" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="editarMatricula">Matrícula</label>
+                                <input type="text" id="editarMatricula" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="editarEmail">E-mail</label>
+                                <input type="email" id="editarEmail" required>
+                            </div>
+
+                            <div class="campo">
+                                <label for="editarSetor">Setor</label>
+                                <select id="editarSetor">
+                                    <option value="">Selecione o setor</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="acoes-formulario" style="display: flex; gap: 10px; margin-top: 15px;">
+                            <button type="submit" class="btn salvar">Salvar Alterações</button>
+                            <button type="button" class="btn cancelar" id="cancelarEdicao">Cancelar</button>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </details>
+
             <details class="funcao" open>
 
                 <summary>Listar Todos os Usuários</summary>
@@ -122,9 +164,9 @@
                                     <th>Nome</th>
                                     <th>Matrícula</th>
                                     <th>E-mail</th>
-                                    <th>Cargo</th>
+                                    <th>Tipo/Função</th>
                                     <th>Situação</th>
-                                    <th></th>
+                                    <th>Ações</th>
                                 </tr>
                             </thead>
 
@@ -132,12 +174,6 @@
                             </tbody>
 
                         </table>
-
-                    </div>
-
-
-
-                        </form>
 
                     </div>
 
@@ -195,9 +231,25 @@
     const modalDesativacao = document.getElementById('modalDesativacao');
     const modalEdicaoSucesso = document.getElementById('modalEdicaoSucesso');
     const botaoConfirmarDesativacao = document.getElementById('confirmarDesativacao');
+    
+    const checkValidador = document.getElementById('checkValidador');
+    const blocoSetor = document.getElementById('blocoSetor');
+
+    checkValidador.addEventListener('change', () => {
+        if (checkValidador.checked) {
+            blocoSetor.style.display = 'block';
+            setorCadastro.required = true;
+        } else {
+            blocoSetor.style.display = 'none';
+            setorCadastro.required = false;
+            setorCadastro.value = '';
+        }
+    });
+
     let setores = [];
     let usuarioPendente = null;
     let botaoOrigemModal = null;
+    let dadosOriginaisEdicao = {};
 
     async function requisitarApi(opcoes = {}) {
         let resposta;
@@ -207,17 +259,14 @@
                 headers: { 'Content-Type': 'application/json', ...(opcoes.headers || {}) }
             });
         } catch (erro) {
-            const orientacao = window.location.protocol === 'file:'
-                ? 'A tela foi aberta como arquivo. Abra pelo Apache usando http://localhost/sistema-embrapa-banco/view/pages/administrador/tela_adminstrador.html.'
-                : 'Confira se o Apache do XAMPP está iniciado e se a tela e o endpoint estão no mesmo servidor.';
-            throw new Error(`Não foi possível acessar usuarios.php. ${orientacao}`);
+            throw new Error('Não foi possível acessar usuarios.php. Verifique se o Apache está rodando.');
         }
 
         let dados;
         try {
             dados = await resposta.json();
         } catch (erro) {
-            throw new Error('O endpoint usuarios.php não retornou JSON. Verifique se o Apache está executando PHP e se o caminho está correto.');
+            throw new Error('O endpoint usuarios.php não retornou JSON.');
         }
         if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível concluir a operação.');
         return dados;
@@ -225,18 +274,35 @@
 
     function preencherSetores(select, selecionado = '') {
         select.replaceChildren(new Option('Selecione o setor', ''));
+        
+        const setoresUnicos = [];
+        const nomesVistos = new Set();
+
         setores.forEach((setor) => {
+            const nomeFormatado = setor.nome.trim();
+            const nomeChave = nomeFormatado.toUpperCase();
+            
+            if (!nomesVistos.has(nomeChave)) {
+                nomesVistos.add(nomeChave);
+                setoresUnicos.push({ ...setor, nome: nomeFormatado });
+            }
+        });
+
+        setoresUnicos.forEach((setor) => {
             const opcao = new Option(setor.nome, setor.id);
             opcao.selected = String(setor.id) === String(selecionado);
             select.add(opcao);
         });
     }
 
-    function criarBotao(texto, classe, acao) {
+    function criarBotao(texto, classe, acao, estiloExtra = '') {
         const botao = document.createElement('button');
         botao.type = 'button';
         botao.className = `btn ${classe}`;
         botao.textContent = texto;
+        if (estiloExtra) {
+            botao.style.cssText += estiloExtra;
+        }
         botao.addEventListener('click', acao);
         return botao;
     }
@@ -258,7 +324,7 @@
             linha.dataset.id = usuario.id;
             linha.dataset.tipo = usuario.tipo;
             const ativo = Number(usuario.status) === 1;
-            [usuario.nome, usuario.matricula, usuario.email, usuario.funcao,
+            [usuario.nome, usuario.matricula, usuario.email, usuario.tipo,
                 ativo ? 'Ativo' : 'Inativo'].forEach((valor) => {
                 const celula = document.createElement('td');
                 celula.textContent = valor;
@@ -269,9 +335,17 @@
             const acoes = document.createElement('div');
             acoes.className = 'acoes';
             acoes.append(criarBotao('Editar', 'editar', () => abrirEdicao(usuario)));
-            acoes.append(criarBotao(ativo ? 'Desativar' : 'Ativar', 'excluir', (evento) => {
+            
+            // Botão de ativar (verde) ou desativar (vermelho) na tabela
+            const estiloBotaoStatus = !ativo 
+                ? 'background-color: #2E7D32; color: #fff;' 
+                : 'background-color: #C62828; color: #fff;';
+            const textoBotaoStatus = ativo ? 'Desativar' : 'Ativar';
+            
+            acoes.append(criarBotao(textoBotaoStatus, 'excluir', (evento) => {
                 alterarStatus(usuario, evento.currentTarget);
-            }));
+            }, estiloBotaoStatus));
+
             celulaAcoes.append(acoes);
             linha.append(celulaAcoes);
             listaUsuarios.append(linha);
@@ -295,9 +369,18 @@
         document.getElementById('editarNome').value = usuario.nome;
         document.getElementById('editarMatricula').value = usuario.matricula;
         document.getElementById('editarEmail').value = usuario.email;
-        document.getElementById('editarCargo').value = usuario.funcao;
+        document.getElementById('editarTipoOriginal').value = usuario.tipo;
         preencherSetores(setorEdicao, usuario.id_setor);
+
+        dadosOriginaisEdicao = {
+            nome: usuario.nome.trim(),
+            matricula: usuario.matricula.trim(),
+            email: usuario.email.trim(),
+            id_setor: String(usuario.id_setor || '')
+        };
+
         areaEdicao.hidden = false;
+        areaEdicao.open = true;
         areaEdicao.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -305,15 +388,27 @@
         const ativo = Number(usuario.status) === 1;
         usuarioPendente = usuario;
         botaoOrigemModal = botaoOrigem;
+        
         document.getElementById('tituloModalDesativacao').textContent = ativo
             ? 'Desativar usuário?'
             : 'Reativar usuário?';
         document.getElementById('textoModalDesativacao').textContent = ativo
             ? `Tem certeza que deseja desativar ${usuario.nome}?`
             : `Tem certeza que deseja reativar ${usuario.nome}?`;
+        
         botaoConfirmarDesativacao.textContent = ativo
             ? 'Confirmar desativação'
             : 'Confirmar reativação';
+
+        // Vermelho (#C62828) para desativação e Verde (#2E7D32) para reativação
+        if (ativo) {
+            botaoConfirmarDesativacao.style.backgroundColor = '#C62828';
+            botaoConfirmarDesativacao.style.color = '#fff';
+        } else {
+            botaoConfirmarDesativacao.style.backgroundColor = '#2E7D32';
+            botaoConfirmarDesativacao.style.color = '#fff';
+        }
+
         modalDesativacao.hidden = false;
         modalDesativacao.style.display = 'grid';
         botaoConfirmarDesativacao.focus();
@@ -351,17 +446,28 @@
     document.getElementById('formCadastro').addEventListener('submit', async (evento) => {
         evento.preventDefault();
         const formulario = evento.currentTarget;
+        
+        const checkboxes = document.querySelectorAll('input[name="funcao"]:checked');
+        const funcoesSelecionadas = Array.from(checkboxes).map(cb => cb.value);
+
+        if (funcoesSelecionadas.length === 0) {
+            alert('Selecione pelo menos uma função/cargo.');
+            return;
+        }
+
         const corpo = {
             nome: document.getElementById('nome').value.trim(),
             matricula: document.getElementById('matricula').value.trim(),
             email: document.getElementById('email').value.trim(),
-            funcao: document.getElementById('cargo').value.trim(),
-            tipo: document.getElementById('tipo').value,
-            id_setor: setorCadastro.value
+            senha: document.getElementById('senha').value.trim(),
+            funcoes: funcoesSelecionadas,
+            id_setor: checkValidador.checked ? setorCadastro.value : null
         };
+
         try {
             await requisitarApi({ method: 'POST', body: JSON.stringify(corpo) });
             formulario.reset();
+            blocoSetor.style.display = 'none';
             await carregarUsuarios();
             alert('Usuário cadastrado com sucesso.');
         } catch (erro) {
@@ -372,19 +478,33 @@
     document.getElementById('formEditar').addEventListener('submit', async (evento) => {
         evento.preventDefault();
         const usuarioId = document.getElementById('editarId').value;
-        const linhaUsuario = [...listaUsuarios.rows].find((linha) => linha.dataset.id === usuarioId);
-        if (!linhaUsuario) return;
+        const tipoOriginal = document.getElementById('editarTipoOriginal').value;
+        
+        const novosDados = {
+            nome: document.getElementById('editarNome').value.trim(),
+            matricula: document.getElementById('editarMatricula').value.trim(),
+            email: document.getElementById('editarEmail').value.trim(),
+            id_setor: String(setorEdicao.value || '')
+        };
+
+        const houveAlteracao = 
+            novosDados.nome !== dadosOriginaisEdicao.nome ||
+            novosDados.matricula !== dadosOriginaisEdicao.matricula ||
+            novosDados.email !== dadosOriginaisEdicao.email ||
+            novosDados.id_setor !== dadosOriginaisEdicao.id_setor;
+
+        if (!houveAlteracao) {
+            alert('Nenhuma alteração foi realizada.');
+            return;
+        }
+
         try {
             await requisitarApi({
                 method: 'PUT',
                 body: JSON.stringify({
                     id: usuarioId,
-                    tipo: linhaUsuario.dataset.tipo,
-                    nome: document.getElementById('editarNome').value.trim(),
-                    matricula: document.getElementById('editarMatricula').value.trim(),
-                    email: document.getElementById('editarEmail').value.trim(),
-                    funcao: document.getElementById('editarCargo').value.trim(),
-                    id_setor: setorEdicao.value
+                    tipo: tipoOriginal,
+                    ...novosDados
                 })
             });
             areaEdicao.hidden = true;
