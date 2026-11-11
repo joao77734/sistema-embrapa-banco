@@ -75,25 +75,22 @@
                             </div>
 
                             <div class="campo">
-                                <label for="cargo">Cargo</label>
-                                <input type="text" id="cargo"
-                                    placeholder="Até 13 caracteres"
-                                    required>
-                            </div>
-
-                            <div class="campo">
-                                <label for="tipo">Tipo de usuário</label>
+                                <label for="tipo">Cargo</label>
                                 <select id="tipo" required>
                                     <option value="">Selecione</option>
                                     <option value="Pesquisador">Pesquisador</option>
                                     <option value="Validador">Validador</option>
+                                    <option value="Comitê">Comitê</option>
                                 </select>
                             </div>
 
                             <div class="campo">
                                 <label for="setor">Setor</label>
                                 <select id="setor" required>
-                                    <option value="">Carregando setores...</option>
+                                    <option value="">Selecione</option>
+                                    <option value="SIPT">SIPT</option>
+                                    <option value="SPAT">SPAT</option>
+                                    <option value="NCO">NCO</option>
                                 </select>
                             </div>
 
