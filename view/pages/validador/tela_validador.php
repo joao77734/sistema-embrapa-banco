@@ -41,6 +41,18 @@ if ($idValidador > 0) {
     }
 }
 
+$colunaMotivo = mysqli_query(
+    $conexao,
+    "SHOW COLUMNS FROM Acao_pesquisador LIKE 'motivo_recusa'"
+);
+if (mysqli_num_rows($colunaMotivo) === 0) {
+    mysqli_query(
+        $conexao,
+        'ALTER TABLE Acao_pesquisador ADD COLUMN motivo_recusa VARCHAR(300) NULL'
+    );
+}
+mysqli_free_result($colunaMotivo);
+
 $sql = '
     SELECT
         acao.id,

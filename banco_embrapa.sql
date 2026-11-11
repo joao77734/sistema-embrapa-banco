@@ -46,6 +46,7 @@ CREATE TABLE Acao_pesquisador (
     categoria_acao VARCHAR(100) NOT NULL,
     data_realizacao DATE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'Pendente',
+    motivo_recusa VARCHAR(300) NULL,
     id_pesquisador INT NOT NULL,
     FOREIGN KEY (id_pesquisador) REFERENCES Pesquisador(id)
 );
