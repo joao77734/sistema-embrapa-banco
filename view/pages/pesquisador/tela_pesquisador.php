@@ -6,7 +6,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['usuario']) || $_SESSION['usuario']['tipo'] !== 'Pesquisador') {
-    header('Location: ../tela_login.html');
+    header('Location: ../tela_login.php');
     exit;
 }
 

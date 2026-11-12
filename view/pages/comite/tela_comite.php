@@ -12,7 +12,7 @@ if (!isset($_SESSION['usuario']) || ($_SESSION['usuario']['tipo'] !== 'Comitê' 
         echo json_encode(['erro' => 'Acesso não autorizado.'], JSON_UNESCAPED_UNICODE);
         exit;
     }
-    header('Location: ../tela_login.html');
+    header('Location: ../tela_login.php');
     exit;
 }
 
