@@ -97,6 +97,12 @@ SELECT 'NCO' WHERE NOT EXISTS (
 );
 
 INSERT INTO Setor (nome)
-SELECT 'SPIT' WHERE NOT EXISTS (
-    SELECT 1 FROM Setor WHERE nome = 'SPIT' AND status = TRUE
+SELECT 'SPAT' WHERE NOT EXISTS (
+    SELECT 1 FROM Setor WHERE nome = 'SPAT' AND status = TRUE
 );
+
+select *  from Setor;
+
+DELETE FROM Setor WHERE id = 4;
+
+UPDATE Setor SET nome = 'SPAT' WHERE id = 3;

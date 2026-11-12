@@ -20,56 +20,16 @@ function entradaJson(): array
     return $dados;
 }
 
-function validarTipo($tipo): string
-{
-    if (!in_array($tipo, ['Pesquisador', 'Validador'], true)) {
-        responder(422, ['erro' => 'Selecione Pesquisador ou Validador.']);
-    }
-    return $tipo;
-}
-
-function validarUsuario(array $dados): array
-{
-    $usuario = [
-        'nome' => trim((string) ($dados['nome'] ?? '')),
-        'matricula' => trim((string) ($dados['matricula'] ?? '')),
-        'email' => trim((string) ($dados['email'] ?? '')),
-        'funcao' => trim((string) ($dados['funcao'] ?? '')),
-        'id_setor' => filter_var($dados['id_setor'] ?? null, FILTER_VALIDATE_INT),
-    ];
-    $tamanhoCargo = function_exists('mb_strlen')
-        ? mb_strlen($usuario['funcao'], 'UTF-8')
-        : strlen($usuario['funcao']);
-
-    if ($usuario['nome'] === '' || $usuario['matricula'] === '' ||
-        !filter_var($usuario['email'], FILTER_VALIDATE_EMAIL) ||
-        $usuario['funcao'] === '' || $tamanhoCargo > 13 || !$usuario['id_setor']) {
-        responder(422, ['erro' => 'Confira os dados. Cargo deve ter até 13 caracteres e o setor é obrigatório.']);
-    }
-    return $usuario;
-}
-
-function tabelaUsuario(string $tipo): string
-{
-    return $tipo === 'Pesquisador' ? 'Pesquisador' : 'Validador';
-}
-
 try {
-    garantirColunasDeSenha($conexao);
+    if (function_exists('garantirColunasDeSenha')) {
+        garantirColunasDeSenha($conexao);
+    }
+    
     $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
     if ($metodo === 'GET') {
-        foreach (['SIPT', 'NCO', 'SPIT'] as $nomeSetor) {
-            $stmtSetor = mysqli_prepare(
-                $conexao,
-                'INSERT INTO Setor (nome) SELECT ? WHERE NOT EXISTS (SELECT 1 FROM Setor WHERE nome = ? AND status = 1)'
-            );
-            mysqli_stmt_bind_param($stmtSetor, 'ss', $nomeSetor, $nomeSetor);
-            mysqli_stmt_execute($stmtSetor);
-            mysqli_stmt_close($stmtSetor);
-        }
-
-        $setoresResultado = mysqli_query($conexao, 'SELECT id, nome FROM Setor WHERE status = 1 ORDER BY nome');
+        // Uso de DISTINCT para evitar que o banco retorne setores duplicados
+        $setoresResultado = mysqli_query($conexao, 'SELECT DISTINCT id, nome FROM Setor WHERE status = 1 ORDER BY nome');
         $setores = mysqli_fetch_all($setoresResultado, MYSQLI_ASSOC);
         mysqli_free_result($setoresResultado);
 
@@ -84,51 +44,82 @@ try {
         $resultado = mysqli_query($conexao, $sql);
         $usuarios = mysqli_fetch_all($resultado, MYSQLI_ASSOC);
         mysqli_free_result($resultado);
+        
         responder(200, ['usuarios' => $usuarios, 'setores' => $setores]);
     }
 
     if ($metodo === 'POST') {
         $dados = entradaJson();
-        $tipo = validarTipo($dados['tipo'] ?? null);
-        $usuario = validarUsuario($dados);
-        $tabela = tabelaUsuario($tipo);
-        $senhaHash = password_hash('1234', PASSWORD_DEFAULT);
-        $stmt = mysqli_prepare($conexao, "INSERT INTO {$tabela} (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
-        mysqli_stmt_bind_param($stmt, 'sssssi', $usuario['nome'], $usuario['email'], $usuario['matricula'], $usuario['funcao'], $senhaHash, $usuario['id_setor']);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        responder(201, ['mensagem' => 'Usuário cadastrado.']);
+        $nome = trim($dados['nome'] ?? '');
+        $matricula = trim($dados['matricula'] ?? '');
+        $email = trim($dados['email'] ?? '');
+        $senhaInput = trim($dados['senha'] ?? '');
+        $funcoes = $dados['funcoes'] ?? [];
+        $idSetor = filter_var($dados['id_setor'] ?? null, FILTER_VALIDATE_INT);
+
+        if ($nome === '' || $matricula === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || empty($funcoes)) {
+            responder(422, ['erro' => 'Preencha todos os campos obrigatórios e selecione ao menos uma função.']);
+        }
+
+        $senhaFinal = $senhaInput !== '' ? $senhaInput : '1234';
+        $senhaHash = password_hash($senhaFinal, PASSWORD_DEFAULT);
+        $funcaoTexto = implode(', ', $funcoes);
+
+        $cadastrou = false;
+        if (in_array('Validador', $funcoes, true)) {
+            if (!$idSetor) {
+                responder(422, ['erro' => 'O setor é obrigatório para validadores.']);
+            }
+            $stmt = mysqli_prepare($conexao, "INSERT INTO Validador (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt, 'sssssi', $nome, $email, $matricula, $funcaoTexto, $senhaHash, $idSetor);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+            $cadastrou = true;
+        }
+
+        if (in_array('Pesquisador', $funcoes, true) || in_array('Comitê', $funcoes, true) || !$cadastrou) {
+            $setorPesq = $idSetor ? $idSetor : 1;
+            $stmt = mysqli_prepare($conexao, "INSERT INTO Pesquisador (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt, 'sssssi', $nome, $email, $matricula, $funcaoTexto, $senhaHash, $setorPesq);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+        }
+
+        responder(201, ['mensagem' => 'Usuário cadastrado com sucesso.']);
     }
 
     if ($metodo === 'PUT') {
         $dados = entradaJson();
-        $tipo = validarTipo($dados['tipo'] ?? null);
-        $usuario = validarUsuario($dados);
         $id = filter_var($dados['id'] ?? null, FILTER_VALIDATE_INT);
-        if (!$id) responder(422, ['erro' => 'Identificador de usuário inválido.']);
+        $tipo = $dados['tipo'] ?? 'Pesquisador';
+        $nome = trim($dados['nome'] ?? '');
+        $matricula = trim($dados['matricula'] ?? '');
+        $email = trim($dados['email'] ?? '');
+        $idSetor = filter_var($dados['id_setor'] ?? null, FILTER_VALIDATE_INT);
 
-        $tabela = tabelaUsuario($tipo);
-        $stmt = mysqli_prepare($conexao, "UPDATE {$tabela} SET nome = ?, email = ?, matricula = ?, funcao = ?, id_setor = ? WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, 'ssssii', $usuario['nome'], $usuario['email'], $usuario['matricula'], $usuario['funcao'], $usuario['id_setor'], $id);
+        if (!$id) responder(422, ['erro' => 'Identificador inválido.']);
+
+        $tabela = ($tipo === 'Validador') ? 'Validador' : 'Pesquisador';
+        $stmt = mysqli_prepare($conexao, "UPDATE {$tabela} SET nome = ?, email = ?, matricula = ?, id_setor = ? WHERE id = ?");
+        mysqli_stmt_bind_param($stmt, 'sssii', $nome, $email, $matricula, $idSetor, $id);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
-        responder(200, ['mensagem' => 'Cadastro atualizado.']);
+        
+        responder(200, ['mensagem' => 'Cadastro atualizado com sucesso.']);
     }
 
     if ($metodo === 'PATCH') {
         $dados = entradaJson();
-        $tipo = validarTipo($dados['tipo'] ?? null);
+        $tipo = $dados['tipo'] ?? 'Pesquisador';
         $id = filter_var($dados['id'] ?? null, FILTER_VALIDATE_INT);
         $status = filter_var($dados['status'] ?? null, FILTER_VALIDATE_INT);
-        if (!$id || !in_array($status, [0, 1], true)) {
-            responder(422, ['erro' => 'Identificador ou situação inválida.']);
-        }
 
-        $tabela = tabelaUsuario($tipo);
+        $tabela = ($tipo === 'Validador') ? 'Validador' : 'Pesquisador';
         $stmt = mysqli_prepare($conexao, "UPDATE {$tabela} SET status = ? WHERE id = ?");
         mysqli_stmt_bind_param($stmt, 'ii', $status, $id);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
+        
         responder(200, ['mensagem' => 'Situação atualizada.']);
     }
 
@@ -136,11 +127,8 @@ try {
     responder(405, ['erro' => 'Método não permitido.']);
 } catch (mysqli_sql_exception $erro) {
     if ($erro->getCode() === 1062) {
-        responder(409, ['erro' => 'Já existe um usuário com essa matrícula.']);
-    }
-    if ($erro->getCode() === 1452) {
-        responder(422, ['erro' => 'O setor selecionado não existe ou está inativo.']);
+        responder(409, ['erro' => 'Já existe um usuário cadastrado com essa matrícula.']);
     }
     error_log($erro->getMessage());
-    responder(500, ['erro' => 'Erro ao acessar o banco de dados. Verifique a conexão e as tabelas.']);
+    responder(500, ['erro' => 'Erro ao acessar o banco de dados.']);
 }
