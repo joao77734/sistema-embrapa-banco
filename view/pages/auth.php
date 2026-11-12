@@ -73,7 +73,7 @@ try {
 
     if ($contaDemo) {
         if (isset($contaDemo['status']) && (int)$contaDemo['status'] === 0) {
-            responderLogin(403, ['erro' => 'Sua conta está desativada. Entre em contato com o administrador.']);
+            responderLogin(403, ['erro' => 'Sua conta está desativada.']);
         }
         if (password_verify($senha, $contaDemo['senha_hash'])) {
             $usuarioAutenticado = [
