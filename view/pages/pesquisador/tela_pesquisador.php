@@ -19,16 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao_tipo = $_POST['acao_tipo'] ?? '';
 
     if ($acao_tipo === 'cadastrar') {
-        $titulo = mysqli_real_escape_string($conexao, $_POST['titulo_acao'] ?? '');
-        $tipo_acao = mysqli_real_escape_string($conexao, $_POST['tipo_acao'] ?? '');
-        $data_realizacao = mysqli_real_escape_string($conexao, $_POST['data_realizacao'] ?? '');
-        $descricao = mysqli_real_escape_string($conexao, $_POST['descricao_acao'] ?? '');
+        $titulo = $_POST['titulo_acao'] ?? '';
+        $tipo_acao = $_POST['tipo_acao'] ?? '';
+        $data_realizacao = $_POST['data_realizacao'] ?? '';
+        $descricao = $_POST['descricao_acao'] ?? '';
         $status = 'Pendente';
 
         if (!empty($titulo) && !empty($tipo_acao) && !empty($data_realizacao)) {
             $stmt = mysqli_prepare($conexao, "INSERT INTO Acao_pesquisador (titulo, categoria_acao, data_realizacao, descricao, status, id_pesquisador) VALUES (?, ?, ?, ?, ?, ?)");
             mysqli_stmt_bind_param($stmt, "sssssi", $titulo, $tipo_acao, $data_realizacao, $descricao, $status, $id_pesquisador);
-            
+
             if (mysqli_stmt_execute($stmt)) {
                 $mensagemSucesso = "Ação cadastrada com sucesso!";
             } else {
@@ -40,21 +40,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($acao_tipo === 'editar') {
         $id_acao = filter_var($_POST['id_acao'] ?? null, FILTER_VALIDATE_INT);
-        $titulo = mysqli_real_escape_string($conexao, $_POST['titulo_acao'] ?? '');
-        $tipo_acao = mysqli_real_escape_string($conexao, $_POST['tipo_acao'] ?? '');
-        $data_realizacao = mysqli_real_escape_string($conexao, $_POST['data_realizacao'] ?? '');
-        $descricao = mysqli_real_escape_string($conexao, $_POST['descricao_acao'] ?? '');
+        $titulo = $_POST['titulo_acao'] ?? '';
+        $tipo_acao = $_POST['tipo_acao'] ?? '';
+        $data_realizacao = $_POST['data_realizacao'] ?? '';
+        $descricao = $_POST['descricao_acao'] ?? '';
 
         if ($id_acao && !empty($titulo) && !empty($tipo_acao) && !empty($data_realizacao)) {
-            $stmt = mysqli_prepare($conexao, "UPDATE Acao_pesquisador SET titulo = ?, categoria_acao = ?, data_realizacao = ?, descricao = ? WHERE id = ? AND id_pesquisador = ?");
-            mysqli_stmt_bind_param($stmt, "ssssii", $titulo, $tipo_acao, $data_realizacao, $descricao, $id_acao, $id_pesquisador);
-            
-            if (mysqli_stmt_execute($stmt)) {
-                $mensagemSucesso = "Ação atualizada com sucesso!";
+            // Busca o status atual para decidir se precisa voltar para Pendente
+            $stmtStatus = mysqli_prepare($conexao, "SELECT status FROM Acao_pesquisador WHERE id = ? AND id_pesquisador = ?");
+            mysqli_stmt_bind_param($stmtStatus, "ii", $id_acao, $id_pesquisador);
+            mysqli_stmt_execute($stmtStatus);
+            $resStatus = mysqli_stmt_get_result($stmtStatus);
+            $linhaStatus = $resStatus ? mysqli_fetch_assoc($resStatus) : null;
+            mysqli_stmt_close($stmtStatus);
+
+            if (!$linhaStatus) {
+                $mensagemErro = "Ação não encontrada.";
             } else {
-                $mensagemErro = "Erro ao atualizar: " . mysqli_error($conexao);
+                $statusAtual = $linhaStatus['status'] ?? 'Pendente';
+                $voltaParaPendente = in_array($statusAtual, ['Aprovado', 'Recusado'], true);
+                $novo_status = $voltaParaPendente ? 'Pendente' : $statusAtual;
+
+                $stmt = mysqli_prepare($conexao, "UPDATE Acao_pesquisador SET titulo = ?, categoria_acao = ?, data_realizacao = ?, descricao = ?, status = ? WHERE id = ? AND id_pesquisador = ?");
+                mysqli_stmt_bind_param($stmt, "sssssii", $titulo, $tipo_acao, $data_realizacao, $descricao, $novo_status, $id_acao, $id_pesquisador);
+
+                if (mysqli_stmt_execute($stmt)) {
+                    $mensagemSucesso = $voltaParaPendente
+                        ? "Ação atualizada com sucesso! O status voltou para Pendente."
+                        : "Ação atualizada com sucesso!";
+                } else {
+                    $mensagemErro = "Erro ao atualizar: " . mysqli_error($conexao);
+                }
+                mysqli_stmt_close($stmt);
             }
-            mysqli_stmt_close($stmt);
         } else {
             $mensagemErro = "Preencha todos os campos para atualizar.";
         }
@@ -64,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($id_acao) {
             $stmt = mysqli_prepare($conexao, "DELETE FROM Acao_pesquisador WHERE id = ? AND id_pesquisador = ?");
             mysqli_stmt_bind_param($stmt, "ii", $id_acao, $id_pesquisador);
-            
+
             if (mysqli_stmt_execute($stmt)) {
                 $mensagemSucesso = "Ação excluída com sucesso!";
             } else {
@@ -123,10 +141,10 @@ mysqli_stmt_close($stmtConsulta);
             </p>
 
             <?php if (!empty($mensagemSucesso)): ?>
-                <div class="alert alert-success" style="color: green; margin-bottom: 15px; text-align: center; font-weight: bold;"><?= $mensagemSucesso ?></div>
+                <div class="alert alert-success" style="color: green; margin-bottom: 15px; text-align: center; font-weight: bold;"><?= htmlspecialchars($mensagemSucesso) ?></div>
             <?php endif; ?>
             <?php if (!empty($mensagemErro)): ?>
-                <div class="alert alert-danger" style="color: red; margin-bottom: 15px; text-align: center; font-weight: bold;"><?= $mensagemErro ?></div>
+                <div class="alert alert-danger" style="color: red; margin-bottom: 15px; text-align: center; font-weight: bold;"><?= htmlspecialchars($mensagemErro) ?></div>
             <?php endif; ?>
 
             <!-- DROPDOWN: CRIAR NOVA AÇÃO -->
@@ -232,7 +250,7 @@ mysqli_stmt_close($stmtConsulta);
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($acoesList as $row): ?>
-                                        <?php 
+                                        <?php
                                             $statusClass = 'analise';
                                             $statusText = $row['status'] ?? 'Pendente';
                                             if ($statusText === 'Aprovado') $statusClass = 'aprovado';
@@ -249,8 +267,8 @@ mysqli_stmt_close($stmtConsulta);
                                             </td>
                                             <td>
                                                 <div class="acoes">
-                                                    <button type="button" class="btn editar" onclick='preencherEdicao(<?= json_encode($row) ?>)'>Editar</button>
-                                                    <button type="button" class="btn excluir" onclick='abrirModalExclusao(<?= $row['id'] ?>, "<?= htmlspecialchars($row['titulo'], ENT_QUOTES) ?>")'>Excluir</button>
+                                                    <button type="button" class="btn editar" onclick="preencherEdicao(<?= htmlspecialchars(json_encode($row), ENT_QUOTES) ?>)">Editar</button>
+                                                    <button type="button" class="btn excluir" onclick="abrirModalExclusao(<?= (int)$row['id'] ?>, <?= htmlspecialchars(json_encode($row['titulo']), ENT_QUOTES) ?>)">Excluir</button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -300,10 +318,10 @@ mysqli_stmt_close($stmtConsulta);
 
         // Guarda os dados originais no momento da abertura para validação posterior
         dadosOriginaisEdicao = {
-            titulo: acao.titulo.trim(),
-            categoria_acao: acao.categoria_acao.trim(),
-            data_realizacao: acao.data_realizacao.trim(),
-            descricao: acao.descricao.trim()
+            titulo: (acao.titulo || '').trim(),
+            categoria_acao: (acao.categoria_acao || '').trim(),
+            data_realizacao: (acao.data_realizacao || '').trim(),
+            descricao: (acao.descricao || '').trim()
         };
 
         secaoEditar.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -324,7 +342,7 @@ mysqli_stmt_close($stmtConsulta);
             descricao: document.getElementById('edit_descricao_acao').value.trim()
         };
 
-        const houveAlteracao = 
+        const houveAlteracao =
             novosDados.titulo !== dadosOriginaisEdicao.titulo ||
             novosDados.categoria_acao !== dadosOriginaisEdicao.categoria_acao ||
             novosDados.data_realizacao !== dadosOriginaisEdicao.data_realizacao ||
