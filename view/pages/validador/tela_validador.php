@@ -85,6 +85,11 @@ if ($resultado) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Validador - Embrapa</title>
     <link rel="stylesheet" href="../../../public/css/main.css">
+    <style>
+        #modalPopup::backdrop {
+            background: transparent !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -171,7 +176,7 @@ if ($resultado) {
     </div>
 
     <dialog id="modalPopup" style="border: none; background: transparent; padding: 0; width: 100%; height: 100%; max-width: none; max-height: none;">
-        <iframe id="iframePopup" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+        <iframe id="iframePopup" src="" style="width: 100%; height: 100%; border: none; background: transparent;"></iframe>
     </dialog>
 
 <script>

@@ -462,6 +462,15 @@ tbody tr:hover,
 
 .pagina-popup {
     min-height: 100vh;
+    background: transparent;
+}
+
+.pagina-popup .validador-pop-up-fundo {
+    background: transparent;
+}
+
+#modalPopup::backdrop {
+    background: transparent;
 }
 
 .popup-fundo,
@@ -614,6 +623,8 @@ tbody tr:hover,
 
 .validador-pop-up-recusa {
     width: min(100%, 520px);
+    background: #fff;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24);
 }
 
 .pesquisador-pop-up-edicao h1,
