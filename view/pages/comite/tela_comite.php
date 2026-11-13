@@ -25,6 +25,7 @@ if ($isAjax) {
     $sql = "
         SELECT 
             p.nome AS usuario, 
+            p.matricula AS matricula,
             'Pesquisador' AS cargo, 
             a.data_realizacao AS data_hora, 
             CONCAT('Ação cadastrada: ', a.titulo) AS descricao,
@@ -88,14 +89,15 @@ if ($isAjax) {
                                 <thead>
                                     <tr class="comite-tabela-linha">
                                         <th class="comite-tabela-cabecalho">Usuário</th>
+                                        <th class="comite-tabela-cabecalho">Matrícula</th>
                                         <th class="comite-tabela-cabecalho">Cargo</th>
-                                        <th class="comite-tabela-cabecalho">Data e hora</th>
+                                        <th class="comite-tabela-cabecalho">Data</th>
                                         <th class="comite-tabela-cabecalho">Descrição do que foi realizado</th>
                                     </tr>
                                 </thead>
                                 <tbody id="listaAtividades">
                                     <tr class="comite-tabela-linha">
-                                        <td class="comite-tabela-celula" colspan="4">Carregando atividades...</td>
+                                        <td class="comite-tabela-celula" colspan="5">Carregando atividades...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -121,7 +123,7 @@ if ($isAjax) {
             linha.className = 'comite-tabela-linha';
             const celula = document.createElement('td');
             celula.className = 'comite-tabela-celula';
-            celula.colSpan = 4;
+            celula.colSpan = 5;
             celula.textContent = mensagem;
             linha.append(celula);
             listaAtividades.replaceChildren(linha);
@@ -145,12 +147,14 @@ if ($isAjax) {
                     const linha = document.createElement('tr');
                     linha.className = 'comite-tabela-linha';
                     const data = new Date(String(atividade.data_hora).replace(' ', 'T'));
+                    
                     const dataFormatada = Number.isNaN(data.getTime())
                         ? atividade.data_hora
-                        : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(data);
+                        : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(data);
                     
                     const valores = [
                         atividade.usuario,
+                        atividade.matricula,
                         atividade.cargo,
                         dataFormatada,
                         atividade.descricao || `Registro na tabela ${atividade.operacao_tabela} (ID ${atividade.id_registro})`
@@ -158,7 +162,7 @@ if ($isAjax) {
 
                     valores.forEach((valor, indice) => {
                         const celula = document.createElement('td');
-                        celula.className = indice === 2
+                        celula.className = indice === 3
                             ? 'comite-tabela-celula comite-tabela-celula-data'
                             : 'comite-tabela-celula';
                         celula.textContent = valor;
