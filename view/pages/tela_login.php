@@ -3,7 +3,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Se já estiver logado, redireciona para o painel correspondente
 if (isset($_SESSION['usuario'])) {
     $tipo = $_SESSION['usuario']['tipo'] ?? '';
     if ($tipo === 'Administrador') {
@@ -29,6 +28,20 @@ if (isset($_SESSION['usuario'])) {
   <title>Login - Embrapa</title>
   <link rel="stylesheet" href="../../public/css/main.css">
   <link rel="stylesheet" href="../../modelos/base.css">
+  <style>
+    .modal-perfil-fundo {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: none; place-items: center; z-index: 999;
+    }
+    .modal-perfil-conteudo {
+        background: #fff; padding: 30px; border-radius: 12px; width: min(100%, 400px); text-align: center;
+    }
+    .modal-perfil-conteudo h3 { margin-bottom: 10px; color: #333; }
+    .modal-perfil-conteudo p { margin-bottom: 20px; color: #666; font-size: 14px; }
+    .botoes-perfis { display: flex; flex-direction: column; gap: 10px; }
+    .btn-perfil { padding: 12px; background: #2E7D32; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-perfil:hover { background: #1B5E20; }
+  </style>
 </head>
 <body>
 
@@ -65,6 +78,15 @@ if (isset($_SESSION['usuario'])) {
 
 </main>
 
+<!-- Modal de Seleção de Múltiplas Funções -->
+<div id="modalSelecaoPerfil" class="modal-perfil-fundo">
+    <div class="modal-perfil-conteudo">
+        <h3>Selecione o perfil</h3>
+        <p>Este e-mail possui mais de uma função cadastrada. Escolha com qual deseja entrar:</p>
+        <div id="listaBotoesPerfis" class="botoes-perfis"></div>
+    </div>
+</div>
+
 <footer class="footer">
   <div class="container">
     <span>© Embrapa – Trabalho do Mauricio</span>
@@ -94,7 +116,11 @@ if (isset($_SESSION['usuario'])) {
       
       if (!resposta.ok) throw new Error(dados.erro || 'Não foi possível entrar.');
       
-      window.location.href = dados.destino;
+      if (dados.multiplas_funcoes) {
+          exibirModalPerfis(dados.perfis);
+      } else {
+          window.location.href = dados.destino;
+      }
     } catch (falha) {
       erro.textContent = falha.message || 'Falha ao conectar com o servidor.';
       erro.hidden = false;
@@ -102,6 +128,35 @@ if (isset($_SESSION['usuario'])) {
       botao.disabled = false;
     }
   });
+
+  function exibirModalPerfis(perfis) {
+      const container = document.getElementById('listaBotoesPerfis');
+      container.replaceChildren();
+
+      perfis.forEach(perfil => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn-perfil';
+          btn.textContent = `Entrar como ${perfil.tipo}`;
+          btn.addEventListener('click', async () => {
+              try {
+                  const resp = await fetch('selecionar_perfil.php', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ tipo: perfil.tipo })
+                  });
+                  const resDados = await resp.json();
+                  if (!resp.ok) throw new Error(resDados.erro || 'Erro ao selecionar perfil.');
+                  window.location.href = resDados.destino;
+              } catch (e) {
+                  alert(e.message);
+              }
+          });
+          container.append(btn);
+      });
+
+      document.getElementById('modalSelecaoPerfil').style.display = 'grid';
+  }
 </script>
 
 </body>
