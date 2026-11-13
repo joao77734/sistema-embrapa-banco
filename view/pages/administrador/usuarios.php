@@ -28,11 +28,11 @@ try {
     $metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
     if ($metodo === 'GET') {
-        // Uso de DISTINCT para evitar que o banco retorne setores duplicados
         $setoresResultado = mysqli_query($conexao, 'SELECT DISTINCT id, nome FROM Setor WHERE status = 1 ORDER BY nome');
         $setores = mysqli_fetch_all($setoresResultado, MYSQLI_ASSOC);
         mysqli_free_result($setoresResultado);
 
+        // Seleciona explicitamente a coluna funcao de cada tabela
         $sql = "
             SELECT id, nome, email, matricula, funcao, status, id_setor, 'Pesquisador' AS tipo
             FROM Pesquisador
@@ -63,27 +63,24 @@ try {
 
         $senhaFinal = $senhaInput !== '' ? $senhaInput : '1234';
         $senhaHash = password_hash($senhaFinal, PASSWORD_DEFAULT);
+        // Junta as funções selecionadas com vírgula e espaço
         $funcaoTexto = implode(', ', $funcoes);
 
-        $cadastrou = false;
+        $tabela = 'Pesquisador';
+        $setorFinal = $idSetor ? $idSetor : 1;
+
         if (in_array('Validador', $funcoes, true)) {
             if (!$idSetor) {
                 responder(422, ['erro' => 'O setor é obrigatório para validadores.']);
             }
-            $stmt = mysqli_prepare($conexao, "INSERT INTO Validador (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
-            mysqli_stmt_bind_param($stmt, 'sssssi', $nome, $email, $matricula, $funcaoTexto, $senhaHash, $idSetor);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-            $cadastrou = true;
+            $tabela = 'Validador';
+            $setorFinal = $idSetor;
         }
 
-        if (in_array('Pesquisador', $funcoes, true) || in_array('Comitê', $funcoes, true) || !$cadastrou) {
-            $setorPesq = $idSetor ? $idSetor : 1;
-            $stmt = mysqli_prepare($conexao, "INSERT INTO Pesquisador (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
-            mysqli_stmt_bind_param($stmt, 'sssssi', $nome, $email, $matricula, $funcaoTexto, $senhaHash, $setorPesq);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
-        }
+        $stmt = mysqli_prepare($conexao, "INSERT INTO {$tabela} (nome, email, matricula, funcao, senha_hash, id_setor) VALUES (?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, 'sssssi', $nome, $email, $matricula, $funcaoTexto, $senhaHash, $setorFinal);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
 
         responder(201, ['mensagem' => 'Usuário cadastrado com sucesso.']);
     }
@@ -100,8 +97,18 @@ try {
         if (!$id) responder(422, ['erro' => 'Identificador inválido.']);
 
         $tabela = ($tipo === 'Validador') ? 'Validador' : 'Pesquisador';
-        $stmt = mysqli_prepare($conexao, "UPDATE {$tabela} SET nome = ?, email = ?, matricula = ?, id_setor = ? WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, 'sssii', $nome, $email, $matricula, $idSetor, $id);
+        
+        if ($tabela === 'Validador') {
+            if (!$idSetor) {
+                responder(422, ['erro' => 'O setor é obrigatório para validadores.']);
+            }
+            $stmt = mysqli_prepare($conexao, "UPDATE Validador SET nome = ?, email = ?, matricula = ?, id_setor = ? WHERE id = ?");
+            mysqli_stmt_bind_param($stmt, 'sssii', $nome, $email, $matricula, $idSetor, $id);
+        } else {
+            $stmt = mysqli_prepare($conexao, "UPDATE Pesquisador SET nome = ?, email = ?, matricula = ? WHERE id = ?");
+            mysqli_stmt_bind_param($stmt, 'sssi', $nome, $email, $matricula, $id);
+        }
+
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         
@@ -109,7 +116,7 @@ try {
     }
 
     if ($metodo === 'PATCH') {
-        $dados = entradaJson();
+        $dados = entradajson();
         $tipo = $dados['tipo'] ?? 'Pesquisador';
         $id = filter_var($dados['id'] ?? null, FILTER_VALIDATE_INT);
         $status = filter_var($dados['status'] ?? null, FILTER_VALIDATE_INT);
