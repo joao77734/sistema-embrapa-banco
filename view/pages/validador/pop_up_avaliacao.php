@@ -18,6 +18,32 @@ if (!$acaoData) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avaliar ação</title>
     <link rel="stylesheet" href="../../../public/css/main.css">
+    <style>
+        html,
+        body.pagina-popup {
+            min-height: 100%;
+            margin: 0;
+            background: transparent !important;
+        }
+
+        body.pagina-popup {
+            display: block;
+        }
+
+        .validador-pop-up-fundo {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: transparent !important;
+        }
+
+        .validador-pop-up-avaliacao {
+            background: #fff !important;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24) !important;
+        }
+    </style>
 </head>
 <body class="pagina-popup">
     <main class="validador-pop-up-fundo">
@@ -34,7 +60,7 @@ if (!$acaoData) {
                 <button type="button" class="btn validador-pop-up-btn validador-pop-up-avaliacao__recusar" onclick="parent.abrirRecusa(<?= $acaoData['id'] ?>)">
                     Recusar Ação
                 </button>
-                <form action="avaliacoes.php" method="POST" style="display:inline;">
+                <form action="avaliacoes.php" method="POST" target="_top" style="display:inline;">
                     <input type="hidden" name="acao" value="aprovar">
                     <input type="hidden" name="id" value="<?= $acaoData['id'] ?>">
                     <button type="submit" class="btn validador-pop-up-btn validador-pop-up-avaliacao__aprovar">
